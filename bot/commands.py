@@ -220,15 +220,15 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.set_footer(text=f"Tổng: {len(active)} role đang hoạt động")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    # ── /role_edit_expire — Chỉnh sửa ngày hết hạn theo member ──
+    # ── /role_edit_expire — Gia hạn thêm X ngày cho member ───────
     @bot.tree.command(
         name="role_edit_expire",
-        description="[Owner] Chỉnh sửa ngày hết hạn role donate của một thành viên",
+        description="[Owner] Gia hạn thêm số ngày cho role donate của một thành viên",
     )
     @app_commands.describe(
-        member="Thành viên cần chỉnh ngày hết hạn",
-        new_date="Ngày hết hạn mới (DD/MM/YYYY hoặc DD/MM/YYYY HH:MM)",
-        package="Gói cụ thể (bỏ trống nếu chỉ có 1 gói hoặc muốn chỉnh tất cả)",
+        member="Thành viên cần gia hạn",
+        days="Số ngày muốn thêm vào (ví dụ: 30 = thêm 30 ngày từ ngày hết hạn hiện tại)",
+        package="Gói cụ thể (bỏ trống để gia hạn tất cả gói đang có)",
     )
     @app_commands.choices(
         package=[
@@ -240,12 +240,16 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
     async def role_edit_expire(
         interaction: discord.Interaction,
         member: discord.Member,
-        new_date: str,
+        days: int,
         package: str = None,
     ):
+        if days == 0:
+            await interaction.response.send_message("❌ Số ngày phải khác 0.", ephemeral=True)
+            return
+
         data = load_data()
 
-        # Tìm các đơn approved của member (lọc theo gói nếu có chỉ định)
+        # Tìm các đơn approved của member (lọc theo gói nếu có)
         donations = [
             d for d in data["donations"]
             if d["status"] == "approved"
@@ -261,47 +265,41 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
-        # Parse ngày mới (thử 2 định dạng)
-        new_dt = None
-        for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y"):
-            try:
-                new_dt = datetime.strptime(new_date.strip(), fmt)
-                break
-            except ValueError:
-                continue
-
-        if not new_dt:
-            await interaction.response.send_message(
-                "❌ Định dạng ngày không hợp lệ.\n"
-                "Vui lòng nhập: `DD/MM/YYYY` hoặc `DD/MM/YYYY HH:MM`\n"
-                "Ví dụ: `15/08/2025` hoặc `15/08/2025 23:59`",
-                ephemeral=True,
-            )
-            return
-
-        # Cập nhật tất cả đơn tìm được và lưu lại ngày cũ để hiển thị
+        # Gia hạn từng đơn: cộng thêm số ngày vào ngày hết hạn hiện tại
         updated = []
         for donation in donations:
-            old_expires = donation.get("expires_at", "Chưa có")
+            old_expires_str = donation.get("expires_at")
             try:
-                old_expires = datetime.fromisoformat(old_expires).strftime("%d/%m/%Y %H:%M")
+                # Tính từ ngày hết hạn cũ (hoặc từ hôm nay nếu không có)
+                base_dt = datetime.fromisoformat(old_expires_str) if old_expires_str else datetime.now()
+                old_display = base_dt.strftime("%d/%m/%Y %H:%M")
             except Exception:
-                pass
+                base_dt = datetime.now()
+                old_display = "Chưa có"
+
+            new_dt = base_dt + timedelta(days=days)
             donation["expires_at"] = new_dt.isoformat()
             donation["expire_edited_at"] = datetime.now().isoformat()
             donation["expire_edited_by"] = str(interaction.user.id)
-            updated.append((donation["code"], donation.get("package_name", "—"), old_expires))
+            updated.append((donation["code"], donation.get("package_name", "—"), old_display, new_dt))
 
         save_data(data)
 
         # Embed xác nhận
-        embed = discord.Embed(title="✅ Đã cập nhật ngày hết hạn", color=discord.Color.blurple())
+        action = f"+{days} ngày" if days > 0 else f"{days} ngày"
+        embed = discord.Embed(
+            title=f"✅ Đã gia hạn {action}",
+            color=discord.Color.blurple(),
+        )
         embed.set_thumbnail(url=member.display_avatar.url)
         embed.add_field(name="👤 Thành viên", value=member.mention, inline=False)
-        for code_val, pkg_name, old_exp in updated:
+        for code_val, pkg_name, old_exp, new_dt in updated:
             embed.add_field(
                 name=f"📦 {pkg_name} — `{code_val}`",
-                value=f"📅 Cũ: ~~{old_exp}~~\n📅 Mới: **{new_dt.strftime('%d/%m/%Y %H:%M')}**",
+                value=(
+                    f"📅 Cũ: ~~{old_exp}~~\n"
+                    f"📅 Mới: **{new_dt.strftime('%d/%m/%Y %H:%M')}**"
+                ),
                 inline=False,
             )
         embed.set_footer(text=f"Chỉnh bởi: {interaction.user.display_name}")
