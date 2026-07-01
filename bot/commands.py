@@ -162,10 +162,133 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         except Exception:
             pass
 
+    # ── /role_list — Xem danh sách role đang hoạt động ──────────
+    @bot.tree.command(
+        name="role_list",
+        description="[Admin] Xem danh sách role donate đang hoạt động và thời gian hết hạn",
+    )
+    @app_commands.describe(member="Thành viên cụ thể (bỏ trống để xem tất cả)")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def role_list(interaction: discord.Interaction, member: discord.Member = None):
+        data = load_data()
+        now = datetime.now()
+
+        # Lọc các đơn đang approved và chưa hết hạn
+        active = [
+            d for d in data.get("donations", [])
+            if d["status"] == "approved"
+            and d.get("expires_at")
+            and datetime.fromisoformat(d["expires_at"]) > now
+            and (member is None or d["target_id"] == str(member.id))
+        ]
+
+        if not active:
+            msg = (
+                f"📭 {member.mention} không có role donate nào đang hoạt động."
+                if member else "📭 Không có role donate nào đang hoạt động."
+            )
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        title = f"🎖️ Role đang hoạt động — {member.display_name}" if member else "🎖️ Tất cả role đang hoạt động"
+        embed = discord.Embed(title=title, color=discord.Color.green())
+
+        for d in active:
+            expires_dt = datetime.fromisoformat(d["expires_at"])
+            remaining = expires_dt - now
+            days_left = remaining.days
+
+            # Màu cảnh báo nếu sắp hết hạn trong 3 ngày
+            warning = " ⚠️" if days_left <= 3 else ""
+
+            target_str = f"<@{d['target_id']}>"
+            embed.add_field(
+                name=f"📦 {d['package_name']} — `{d['code']}`{warning}",
+                value=(
+                    f"👤 {target_str}\n"
+                    f"⏳ Hết hạn: **{expires_dt.strftime('%d/%m/%Y %H:%M')}**\n"
+                    f"📅 Còn lại: **{days_left} ngày**"
+                ),
+                inline=False,
+            )
+
+        embed.set_footer(text=f"Tổng: {len(active)} role đang hoạt động")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    # ── /role_edit_expire — Chỉnh sửa ngày hết hạn ──────────────
+    @bot.tree.command(
+        name="role_edit_expire",
+        description="[Admin] Chỉnh sửa ngày hết hạn của một đơn donate",
+    )
+    @app_commands.describe(
+        code="Mã đơn donate (ví dụ: KAIA123456)",
+        new_date="Ngày hết hạn mới (định dạng: DD/MM/YYYY hoặc DD/MM/YYYY HH:MM)",
+    )
+    @app_commands.checks.has_permissions(administrator=True)
+    async def role_edit_expire(
+        interaction: discord.Interaction,
+        code: str,
+        new_date: str,
+    ):
+        data = load_data()
+        donation = next((d for d in data["donations"] if d["code"].upper() == code.upper()), None)
+
+        if not donation:
+            await interaction.response.send_message(
+                f"❌ Không tìm thấy đơn với mã `{code}`.", ephemeral=True
+            )
+            return
+
+        # Thử parse ngày theo 2 định dạng
+        new_dt = None
+        for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y"):
+            try:
+                new_dt = datetime.strptime(new_date.strip(), fmt)
+                break
+            except ValueError:
+                continue
+
+        if not new_dt:
+            await interaction.response.send_message(
+                "❌ Định dạng ngày không hợp lệ.\n"
+                "Vui lòng nhập theo dạng: `DD/MM/YYYY` hoặc `DD/MM/YYYY HH:MM`\n"
+                "Ví dụ: `15/08/2025` hoặc `15/08/2025 23:59`",
+                ephemeral=True,
+            )
+            return
+
+        old_expires = donation.get("expires_at", "Chưa có")
+        if old_expires != "Chưa có":
+            try:
+                old_expires = datetime.fromisoformat(old_expires).strftime("%d/%m/%Y %H:%M")
+            except Exception:
+                pass
+
+        # Cập nhật ngày hết hạn
+        donation["expires_at"] = new_dt.isoformat()
+        donation["expire_edited_at"] = datetime.now().isoformat()
+        donation["expire_edited_by"] = str(interaction.user.id)
+        save_data(data)
+
+        pkg = PACKAGES.get(donation.get("package_key"), {})
+        embed = discord.Embed(
+            title="✅ Đã cập nhật ngày hết hạn",
+            color=discord.Color.blurple(),
+        )
+        embed.add_field(name="📝 Mã đơn", value=f"`{donation['code']}`", inline=True)
+        embed.add_field(name="📦 Gói", value=donation.get("package_name", "—"), inline=True)
+        embed.add_field(name="👤 Thành viên", value=f"<@{donation['target_id']}>", inline=True)
+        embed.add_field(name="📅 Hết hạn cũ", value=old_expires, inline=True)
+        embed.add_field(name="📅 Hết hạn mới", value=new_dt.strftime("%d/%m/%Y %H:%M"), inline=True)
+        embed.set_footer(text=f"Chỉnh bởi: {interaction.user.display_name}")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
     # ── Error handlers ────────────────────────────────────────────
     @donate_setup.error
     @donate_list.error
     @add_role_month.error
+    @role_list.error
+    @role_edit_expire.error
     async def admin_command_error(interaction: discord.Interaction, error: Exception):
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message(
