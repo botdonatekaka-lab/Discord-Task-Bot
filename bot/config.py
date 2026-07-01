@@ -39,7 +39,7 @@ PACKAGES = {
     },
     "co_dong_nho": {
         "name": "Cổ Đông Nhỏ",
-        "emoji": discord.PartialEmoji(name="emoji_68", id=1522020595263471847),
+        "emoji": discord.PartialEmoji(name="emoji_67", id=1522020541425520711),
         "role_id": 1514290379787079881,
         "prices": {
             "1": 25000,
@@ -49,7 +49,7 @@ PACKAGES = {
     },
     "cu_dan_dong_gop": {
         "name": "Cư Dân Đóng Góp",
-        "emoji": discord.PartialEmoji(name="emoji_67", id=1522020541425520711),
+        "emoji": discord.PartialEmoji(name="emoji_68", id=1522020595263471847),
         "role_id": 1512799562149003275,
         "prices": {
             "1": 10000,
