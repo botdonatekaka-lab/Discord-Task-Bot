@@ -1,0 +1,695 @@
+import discord
+from discord.ext import commands, tasks
+from discord import app_commands
+from discord.ui import Button, Select, Modal, TextInput, View
+import os
+import json
+import random
+import string
+from datetime import datetime, timedelta
+import asyncio
+import unicodedata
+
+TOKEN = os.environ.get("DISCORD_TOKEN")
+
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# ═══════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════
+ADMIN_CHANNEL_ID = 1515221397452882000
+THANKS_CHANNEL_ID = 1514934088870662184
+PRIVILEGE_CHANNEL_ID = 1513291802193559652
+BANK_NAME = "MBBank"
+BANK_ACCOUNT = "78911112003"
+BANK_HOLDER = "NGUYEN VIET HIEU"
+DATA_FILE = "donate_data.json"
+
+PACKAGES = {
+    "dang_cap_khac": {
+        "name": "Đẳng Cấp Khác",
+        "emoji": "💲",
+        "role_id": 1512910004548669500,
+        "prices": {"1": 199000, "2": 350000, "3": 400000},
+    },
+    "co_dong_lon": {
+        "name": "Cổ Đông Lớn",
+        "emoji": "💸",
+        "role_id": 1512099086990577675,
+        "prices": {"1": 99000, "2": 200000, "3": 300000},
+    },
+    "co_dong_nho": {
+        "name": "Cổ Đông Nhỏ",
+        "emoji": "💠",
+        "role_id": 1514290379787079881,
+        "prices": {"1": 25000, "2": 45000, "3": 60000},
+    },
+    "cu_dan_dong_gop": {
+        "name": "Cư Dân Đóng Góp",
+        "emoji": "🏅",
+        "role_id": 1512799562149003275,
+        "prices": {"1": 10000, "2": 15000, "3": 20000},
+    },
+}
+
+# ═══════════════════════════════════════════════════════════════
+# DATA HELPERS
+# ═══════════════════════════════════════════════════════════════
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {"donations": [], "panel_message_id": None, "panel_channel_id": None}
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def gen_code():
+    digits = "".join(random.choices(string.digits, k=6))
+    return f"KAIA{digits}"
+
+
+def gen_qr_url(amount, code):
+    holder = BANK_HOLDER.replace(" ", "%20")
+    return (
+        f"https://qr.sepay.vn/img?bank={BANK_NAME}"
+        f"&acc={BANK_ACCOUNT}&amount={amount}"
+        f"&des={code}&showinfo=true&fullacc=true&holder={holder}"
+    )
+
+
+def fmt_money(amount):
+    return f"{amount:,}đ".replace(",", ".")
+
+
+def fmt_months(months):
+    """Hiển thị số tháng hoặc 'Tùy chọn' nếu là custom."""
+    try:
+        return f"{int(months)} tháng"
+    except (ValueError, TypeError):
+        return "Tùy chọn"
+
+
+# ═══════════════════════════════════════════════════════════════
+# EMBED BUILDERS
+# ═══════════════════════════════════════════════════════════════
+
+def build_panel_embed():
+    embed = discord.Embed(
+        title="💸 ỦNG HỘ CHO SEVER",
+        description="Hãy chọn nút bên dưới nhé!",
+        color=discord.Color.gold(),
+    )
+    return embed
+
+
+def build_qr_embed(user: discord.Member, target: discord.Member, amount: int, code: str, pkg: dict, months: str):
+    qr_url = gen_qr_url(amount, code)
+    embed = discord.Embed(
+        title="🏦 MÃ QR THANH TOÁN",
+        description=(
+            "📌 **Quét mã hoặc chuyển khoản thủ công**\n\n"
+            f"👤 **Người nhận:** {BANK_HOLDER}\n"
+            f"🏦 **Ngân hàng:** MB BANK\n"
+            f"💳 **STK:** `{BANK_ACCOUNT}`\n"
+            f"💰 **Số tiền:** `{fmt_money(amount)}`\n"
+            f"📝 **Nội dung CK:** `{code}`\n\n"
+            "📸 **Lưu ý:** Khi chuyển khoản vui lòng chụp bill lại."
+        ),
+        color=discord.Color.green(),
+    )
+    embed.set_image(url=qr_url)
+    embed.set_footer(text=f"Gói: {pkg['name']} • {fmt_months(months)} • Mã: {code}")
+    return embed
+
+
+def build_admin_embed(user: discord.Member, target: discord.Member, pkg: dict, months: str, amount: int, code: str):
+    embed = discord.Embed(title="📥 ĐƠN DONATE MỚI", color=discord.Color.orange())
+    embed.set_author(
+        name=f"{user.display_name} ({user})",
+        icon_url=user.display_avatar.url,
+    )
+    embed.add_field(name="👤 Người donate", value=user.mention, inline=True)
+    if target.id != user.id:
+        embed.add_field(name="🎁 Donate cho", value=target.mention, inline=True)
+    embed.add_field(name="📦 Gói", value=pkg["name"], inline=True)
+    embed.add_field(name="📅 Số tháng", value=fmt_months(months), inline=True)
+    embed.add_field(name="💰 Số tiền", value=fmt_money(amount), inline=True)
+    embed.add_field(name="📝 Mã", value=f"`{code}`", inline=True)
+    embed.set_footer(text=f"Tạo lúc: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    return embed
+
+
+# ═══════════════════════════════════════════════════════════════
+# APPROVE / REJECT LOGIC
+# ═══════════════════════════════════════════════════════════════
+
+async def do_approve(interaction: discord.Interaction, code: str):
+    data = load_data()
+    donation = next((d for d in data["donations"] if d["code"] == code), None)
+
+    if not donation:
+        await interaction.response.send_message("❌ Không tìm thấy đơn.", ephemeral=True)
+        return
+    if donation["status"] != "pending":
+        await interaction.response.send_message("⚠️ Đơn này đã được xử lý rồi.", ephemeral=True)
+        return
+
+    guild = interaction.guild
+    target = guild.get_member(int(donation["target_id"]))
+    pkg = PACKAGES[donation["package_key"]]
+    role = guild.get_role(pkg["role_id"])
+
+    if target and role:
+        try:
+            await target.add_roles(role, reason=f"Donate {code}")
+        except discord.Forbidden:
+            pass
+
+    donation["status"] = "approved"
+    donation["approved_at"] = datetime.now().isoformat()
+    donation["approved_by"] = str(interaction.user.id)
+    try:
+        months_int = int(donation["months"])
+    except (ValueError, TypeError):
+        months_int = 1
+    donation["expires_at"] = (datetime.now() + timedelta(days=30 * months_int)).isoformat()
+    save_data(data)
+
+    # Cập nhật tin nhắn admin
+    embed = interaction.message.embeds[0]
+    embed.color = discord.Color.green()
+    embed.title = "✅ ĐÃ DUYỆT"
+    embed.add_field(name="✅ Duyệt bởi", value=interaction.user.mention, inline=False)
+    await interaction.message.edit(embed=embed, view=None)
+
+    role_mention = role.mention if role else f"**{pkg['name']}**"
+    user_mention = target.mention if target else f"<@{donation['target_id']}>"
+
+    await interaction.response.send_message("✅ Đã duyệt đơn thành công!", ephemeral=True)
+
+    # Gửi DM cho người được nhận role
+    if target:
+        try:
+            registered_at = datetime.fromisoformat(donation["created_at"]).strftime("%d/%m/%Y %H:%M:%S")
+            expires_at_fmt = datetime.fromisoformat(donation["expires_at"]).strftime("%d/%m/%Y %H:%M:%S")
+            donor_mention = f"<@{donation['user_id']}>"
+            is_gift = donation["user_id"] != donation["target_id"]
+
+            dm_embed = discord.Embed(
+                title="💎 DONATE THÀNH CÔNG!",
+                description=(
+                    f"Cảm ơn {'bạn' if not is_gift else donor_mention} đã ủng hộ server **Quần Đảo Kaia**! 💖\n\n"
+                    f"Sự ủng hộ của {'bạn' if not is_gift else 'họ'} giúp server ngày càng phát triển hơn. 🚀"
+                ),
+                color=discord.Color.gold(),
+            )
+            dm_embed.add_field(name="📦 Gói", value=f"{pkg['emoji']} {pkg['name']}", inline=True)
+            dm_embed.add_field(name="💰 Số tiền", value=fmt_money(donation["amount"]), inline=True)
+            dm_embed.add_field(name="📝 Mã", value=f"`{code}`", inline=True)
+            dm_embed.add_field(name="🕐 Thời gian đăng ký", value=registered_at, inline=False)
+            dm_embed.add_field(name="⏳ Thời gian hết hạn", value=expires_at_fmt, inline=False)
+            dm_embed.set_footer(text="Hẹn gặp lại bạn ở lần donate tiếp theo! 🌴")
+            dm_embed.set_thumbnail(url=target.display_avatar.url)
+            await target.send(embed=dm_embed)
+        except Exception:
+            pass
+
+    # Gửi cảm ơn vào kênh thông báo
+    thanks_channel = guild.get_channel(THANKS_CHANNEL_ID)
+    if thanks_channel:
+        tc_embed = discord.Embed(
+            description=(
+                f"💎✨ Xin gửi lời cảm ơn đặc biệt đến {user_mention} vì đã donate cho server!\n\n"
+                f"Nhờ những người tuyệt vời như bạn mà bot có thể tiếp tục được duy trì, nâng cấp "
+                f"và mang đến nhiều trải nghiệm tốt hơn cho mọi người. 🚀\n\n"
+                f"🎖️ Role {role_mention} đã được trao như một lời cảm ơn nhỏ từ server!"
+            ),
+            color=discord.Color.gold(),
+        )
+        if target:
+            tc_embed.set_thumbnail(url=target.display_avatar.url)
+        await thanks_channel.send(embed=tc_embed)
+
+    await refresh_panel(guild)
+
+
+async def do_reject(interaction: discord.Interaction, code: str):
+    data = load_data()
+    donation = next((d for d in data["donations"] if d["code"] == code), None)
+
+    if not donation:
+        await interaction.response.send_message("❌ Không tìm thấy đơn.", ephemeral=True)
+        return
+    if donation["status"] != "pending":
+        await interaction.response.send_message("⚠️ Đơn này đã được xử lý rồi.", ephemeral=True)
+        return
+
+    donation["status"] = "rejected"
+    donation["rejected_at"] = datetime.now().isoformat()
+    donation["rejected_by"] = str(interaction.user.id)
+    save_data(data)
+
+    embed = interaction.message.embeds[0]
+    embed.color = discord.Color.red()
+    embed.title = "❌ ĐÃ TỪ CHỐI"
+    embed.add_field(name="❌ Từ chối bởi", value=interaction.user.mention, inline=False)
+    await interaction.message.edit(embed=embed, view=None)
+
+    target = interaction.guild.get_member(int(donation["target_id"]))
+    if target:
+        try:
+            reject_embed = discord.Embed(
+                title="❌ Đơn donate bị từ chối",
+                description=(
+                    f"Đơn donate của bạn với mã `{donation['code']}` đã bị từ chối.\n"
+                    "Vui lòng liên hệ admin nếu bạn đã thực hiện chuyển khoản."
+                ),
+                color=discord.Color.red(),
+            )
+            await target.send(embed=reject_embed)
+        except Exception:
+            pass
+
+    await interaction.response.send_message(
+        f"❌ Đã từ chối đơn `{donation['code']}`.", ephemeral=True
+    )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PANEL HELPER
+# ═══════════════════════════════════════════════════════════════
+
+async def refresh_panel(guild: discord.Guild):
+    data = load_data()
+    panel_channel_id = data.get("panel_channel_id")
+    panel_message_id = data.get("panel_message_id")
+
+    if not panel_channel_id:
+        return
+
+    channel = guild.get_channel(int(panel_channel_id))
+    if not channel:
+        return
+
+    if panel_message_id:
+        try:
+            old_msg = await channel.fetch_message(int(panel_message_id))
+            await old_msg.delete()
+        except Exception:
+            pass
+
+    msg = await channel.send(embed=build_panel_embed(), view=PublicDonateView())
+    data["panel_message_id"] = str(msg.id)
+    save_data(data)
+
+
+# ═══════════════════════════════════════════════════════════════
+# UI: ADMIN APPROVE VIEW (persistent per code)
+# ═══════════════════════════════════════════════════════════════
+
+class AdminApproveView(View):
+    def __init__(self, code: str):
+        super().__init__(timeout=None)
+        self.code = code
+
+        approve_btn = Button(
+            label="✅ Duyệt",
+            style=discord.ButtonStyle.success,
+            custom_id=f"approve_{code}",
+        )
+        reject_btn = Button(
+            label="❌ Từ Chối",
+            style=discord.ButtonStyle.danger,
+            custom_id=f"reject_{code}",
+        )
+        approve_btn.callback = self._approve
+        reject_btn.callback = self._reject
+        self.add_item(approve_btn)
+        self.add_item(reject_btn)
+
+    async def _approve(self, interaction: discord.Interaction):
+        await do_approve(interaction, self.code)
+
+    async def _reject(self, interaction: discord.Interaction):
+        await do_reject(interaction, self.code)
+
+
+# ═══════════════════════════════════════════════════════════════
+# UI: DONATION FLOW
+# ═══════════════════════════════════════════════════════════════
+
+async def finalize_donation(
+    interaction: discord.Interaction,
+    pkg_key: str,
+    target: discord.Member,
+    donor: discord.Member,
+    months: str,
+    amount: int,
+):
+    pkg = PACKAGES[pkg_key]
+    code = gen_code()
+
+    data = load_data()
+    data["donations"].append({
+        "code": code,
+        "user_id": str(donor.id),
+        "user_name": donor.display_name,
+        "target_id": str(target.id),
+        "target_name": target.display_name,
+        "package_key": pkg_key,
+        "package_name": pkg["name"],
+        "months": months,
+        "amount": amount,
+        "status": "pending",
+        "created_at": datetime.now().isoformat(),
+    })
+    save_data(data)
+
+    qr_embed = build_qr_embed(donor, target, amount, code, pkg, months)
+    await interaction.response.edit_message(embed=qr_embed, view=None)
+
+    admin_channel = interaction.guild.get_channel(ADMIN_CHANNEL_ID)
+    if admin_channel:
+        admin_embed = build_admin_embed(donor, target, pkg, months, amount, code)
+        admin_view = AdminApproveView(code)
+        bot.add_view(admin_view)
+        await admin_channel.send(embed=admin_embed, view=admin_view)
+
+
+class CustomAmountModal(Modal, title="✍️ Nhập Số Tiền Tùy Chọn"):
+    amount_input = TextInput(
+        label="Số tiền (VNĐ)",
+        placeholder="Ví dụ: 50000",
+        min_length=1,
+        max_length=10,
+    )
+
+    def __init__(self, pkg_key: str, target: discord.Member, donor: discord.Member):
+        super().__init__()
+        self.pkg_key = pkg_key
+        self.target = target
+        self.donor = donor
+
+    async def on_submit(self, interaction: discord.Interaction):
+        raw = self.amount_input.value.replace(",", "").replace(".", "").strip()
+        if not raw.isdigit() or int(raw) <= 0:
+            await interaction.response.send_message(
+                "❌ Số tiền không hợp lệ. Vui lòng nhập số nguyên dương.", ephemeral=True
+            )
+            return
+        await finalize_donation(
+            interaction, self.pkg_key, self.target, self.donor, "custom", int(raw)
+        )
+
+
+class MonthSelect(Select):
+    def __init__(self, pkg_key: str, target: discord.Member, donor: discord.Member):
+        self.pkg_key = pkg_key
+        self.target = target
+        self.donor = donor
+        pkg = PACKAGES[pkg_key]
+        options = [
+            discord.SelectOption(label=f"{m} tháng", value=m, emoji="📅")
+            for m in pkg["prices"].keys()
+        ]
+        options.append(discord.SelectOption(label="Số Khác", value="custom", emoji="✍️"))
+        super().__init__(placeholder="📅 Chọn số tháng...", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        months = self.values[0]
+        pkg = PACKAGES[self.pkg_key]
+
+        if months == "custom":
+            await interaction.response.send_modal(
+                CustomAmountModal(self.pkg_key, self.target, self.donor)
+            )
+            return
+
+        amount = pkg["prices"][months]
+        await finalize_donation(interaction, self.pkg_key, self.target, self.donor, months, amount)
+
+
+class MonthSelectView(View):
+    def __init__(self, pkg_key: str, target: discord.Member, donor: discord.Member):
+        super().__init__(timeout=300)
+        self.add_item(MonthSelect(pkg_key, target, donor))
+
+
+class PackageSelect(Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label=pkg["name"], value=key, emoji=pkg["emoji"])
+            for key, pkg in PACKAGES.items()
+        ]
+        super().__init__(placeholder="Chọn Role...", options=options, row=0)
+
+    async def callback(self, interaction: discord.Interaction):
+        pkg_key = self.values[0]
+        pkg = PACKAGES[pkg_key]
+        target = self.view.target_user or interaction.user
+
+        embed = discord.Embed(title=f"{pkg['emoji']} {pkg['name']}", color=discord.Color.gold())
+        view = MonthSelectView(pkg_key, target, interaction.user)
+        await interaction.response.edit_message(embed=embed, view=view)
+
+
+class GiftTargetSelect(discord.ui.UserSelect):
+    def __init__(self):
+        super().__init__(
+            placeholder="Chọn Cho Người Khác...",
+            min_values=0,
+            max_values=1,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.target_user = self.values[0] if self.values else interaction.user
+        await interaction.response.defer()
+
+
+class SimplePackageView(View):
+    def __init__(self, default_target: discord.Member = None):
+        super().__init__(timeout=300)
+        self.target_user = default_target
+        self.add_item(PackageSelect())
+        self.add_item(GiftTargetSelect())
+
+
+# ═══════════════════════════════════════════════════════════════
+# UI: PUBLIC DONATE PANEL (persistent)
+# ═══════════════════════════════════════════════════════════════
+
+class PublicDonateView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="💸 BẤM ĐỂ DONATE",
+        style=discord.ButtonStyle.primary,
+        custom_id="public_donate_btn",
+        row=0,
+    )
+    async def donate_button(self, interaction: discord.Interaction, button: Button):
+        view = SimplePackageView(default_target=interaction.user)
+        await interaction.response.send_message(view=view, ephemeral=True)
+
+    @discord.ui.button(
+        label="🎟️ ĐẶC QUYỀN",
+        style=discord.ButtonStyle.secondary,
+        custom_id="public_privilege_btn",
+        row=0,
+    )
+    async def privilege_button(self, interaction: discord.Interaction, button: Button):
+        await interaction.response.send_message(
+            f"Để xem các đặc quyền riêng biệt, hãy nhấp vào: <#{PRIVILEGE_CHANNEL_ID}>",
+            ephemeral=True,
+        )
+
+
+# ═══════════════════════════════════════════════════════════════
+# SLASH COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+@bot.tree.command(name="donate", description="Donate để ủng hộ server")
+async def slash_donate(interaction: discord.Interaction):
+    view = SimplePackageView(default_target=interaction.user)
+    await interaction.response.send_message(view=view, ephemeral=True)
+
+
+@bot.tree.command(name="donate_setup", description="[Admin] Gửi panel donate công khai")
+@app_commands.checks.has_permissions(administrator=True)
+async def donate_setup(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    data = load_data()
+
+    panel_channel_id = data.get("panel_channel_id")
+    panel_message_id = data.get("panel_message_id")
+    if panel_channel_id:
+        old_ch = interaction.guild.get_channel(int(panel_channel_id))
+        if old_ch and panel_message_id:
+            try:
+                old_msg = await old_ch.fetch_message(int(panel_message_id))
+                await old_msg.delete()
+            except Exception:
+                pass
+
+    msg = await interaction.channel.send(embed=build_panel_embed(), view=PublicDonateView())
+    data["panel_message_id"] = str(msg.id)
+    data["panel_channel_id"] = str(interaction.channel.id)
+    save_data(data)
+
+    await interaction.followup.send("✅ Panel donate đã được gửi thành công!", ephemeral=True)
+
+
+@bot.tree.command(name="donate_list", description="[Admin] Xem danh sách đơn donate gần nhất")
+@app_commands.checks.has_permissions(administrator=True)
+async def donate_list(interaction: discord.Interaction):
+    data = load_data()
+    donations = data.get("donations", [])
+
+    if not donations:
+        await interaction.response.send_message("📭 Chưa có đơn donate nào.", ephemeral=True)
+        return
+
+    recent = donations[-10:]
+    status_emoji = {"pending": "⏳", "approved": "✅", "rejected": "❌"}
+
+    embed = discord.Embed(title="📋 DANH SÁCH DONATE GẦN ĐÂY", color=discord.Color.blue())
+    for d in reversed(recent):
+        emoji = status_emoji.get(d["status"], "❓")
+        target_str = f" → {d['target_name']}" if d["target_id"] != d["user_id"] else ""
+        embed.add_field(
+            name=f"{emoji} `{d['code']}` – {d['package_name']}",
+            value=(
+                f"👤 {d['user_name']}{target_str}\n"
+                f"💰 {fmt_money(d['amount'])} • {fmt_months(d['months'])}\n"
+                f"📅 {d['created_at'][:10]}"
+            ),
+            inline=False,
+        )
+
+    total = len(donations)
+    approved = sum(1 for d in donations if d["status"] == "approved")
+    pending = sum(1 for d in donations if d["status"] == "pending")
+    embed.set_footer(text=f"Tổng: {total} | ✅ {approved} duyệt | ⏳ {pending} chờ | Hiển thị 10 gần nhất")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@bot.tree.command(name="add_role_month", description="[Admin] Cấp role donate theo tháng cho thành viên")
+@app_commands.describe(
+    member="Thành viên cần cấp role",
+    package="Gói donate",
+    months="Số tháng",
+)
+@app_commands.choices(
+    package=[
+        app_commands.Choice(name=f"{pkg['emoji']} {pkg['name']}", value=key)
+        for key, pkg in PACKAGES.items()
+    ],
+    months=[
+        app_commands.Choice(name="1 tháng", value=1),
+        app_commands.Choice(name="2 tháng", value=2),
+        app_commands.Choice(name="3 tháng", value=3),
+    ],
+)
+@app_commands.checks.has_permissions(administrator=True)
+async def add_role_month(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    package: str,
+    months: int,
+):
+    pkg = PACKAGES[package]
+    role = interaction.guild.get_role(pkg["role_id"])
+
+    if not role:
+        await interaction.response.send_message(
+            f"❌ Không tìm thấy role ID `{pkg['role_id']}`. Kiểm tra lại server roles.",
+            ephemeral=True,
+        )
+        return
+
+    try:
+        await member.add_roles(role, reason=f"Admin cấp {pkg['name']} {months} tháng")
+    except discord.Forbidden:
+        await interaction.response.send_message(
+            "❌ Bot không có quyền cấp role này.", ephemeral=True
+        )
+        return
+
+    data = load_data()
+    code = gen_code()
+    data["donations"].append({
+        "code": code,
+        "user_id": str(interaction.user.id),
+        "user_name": interaction.user.display_name,
+        "target_id": str(member.id),
+        "target_name": member.display_name,
+        "package_key": package,
+        "package_name": pkg["name"],
+        "months": str(months),
+        "amount": pkg["prices"][str(months)],
+        "status": "approved",
+        "created_at": datetime.now().isoformat(),
+        "approved_at": datetime.now().isoformat(),
+        "approved_by": str(interaction.user.id),
+        "expires_at": (datetime.now() + timedelta(days=30 * months)).isoformat(),
+        "note": "Admin cấp thủ công",
+    })
+    save_data(data)
+
+    embed = discord.Embed(
+        title="✅ Cấp role thành công",
+        description=f"Đã cấp {role.mention} cho {member.mention} trong **{months} tháng**.",
+        color=discord.Color.green(),
+    )
+    embed.set_thumbnail(url=member.display_avatar.url)
+    embed.add_field(name="📦 Gói", value=pkg["name"], inline=True)
+    embed.add_field(name="💰 Giá trị", value=fmt_money(pkg["prices"][str(months)]), inline=True)
+    embed.set_footer(text=f"Cấp bởi: {interaction.user.display_name}")
+    await interaction.response.send_message(embed=embed)
+
+    # Gửi DM thông báo cho thành viên được cấp role
+    try:
+        registered_at = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        expires_at_fmt = (datetime.now() + timedelta(days=30 * months)).strftime("%d/%m/%Y %H:%M:%S")
+        dm_embed = discord.Embed(
+            title="💎 DONATE THÀNH CÔNG!",
+            description=(
+                f"Bạn vừa được cấp role bởi admin của server **Quần Đảo Kaia**! 💖\n\n"
+                f"Cảm ơn vì đã đồng hành cùng server. 🚀"
+            ),
+            color=discord.Color.gold(),
+        )
+        dm_embed.add_field(name="📦 Gói", value=f"{pkg['emoji']} {pkg['name']}", inline=True)
+        dm_embed.add_field(name="💰 Giá trị", value=fmt_money(pkg["prices"][str(months)]), inline=True)
+        dm_embed.add_field(name="📝 Mã", value=f"`{code}`", inline=True)
+        dm_embed.add_field(name="🕐 Thời gian đăng ký", value=registered_at, inline=False)
+        dm_embed.add_field(name="⏳ Thời gian hết hạn", value=expires_at_fmt, inline=False)
+        dm_embed.set_footer(text="Hẹn gặp lại bạn ở lần donate tiếp theo! 🌴")
+        dm_embed.set_thumbnail(url=member.display_avatar.url)
+        await member.send(embed=dm_embed)
+    except Exception:
+        pass
+
+
+# ═══════════════════════════════════════════════════════════════
+# ERROR HANDLERS
+# ═══════════════════════════════════════════════════════════════
+
+@donate_setup.error
+@donate_list.error
+@add_role_month.error
+async def admin_command_error(interaction: discord.Interaction, error):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "❌ Bạn không có quyền sử dụng lệnh này.", ephemeral=True
