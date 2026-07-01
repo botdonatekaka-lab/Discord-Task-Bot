@@ -19,14 +19,10 @@ def build_panel_embed() -> discord.Embed:
 
 
 def build_package_embed(pkg: dict) -> discord.Embed:
-    """Embed hiển thị thông tin gói sau khi người dùng chọn."""
-    lines = "\n".join(
-        f"• **{m} tháng** — {fmt_money(p)}"
-        for m, p in pkg["prices"].items()
-    )
+    """Embed hiển thị gói đã chọn — chỉ tên, không có bảng giá."""
     embed = discord.Embed(
-        title=f"{pkg['emoji']} {pkg['name']}",
-        description=f"**Bảng giá:**\n{lines}\n\n📅 Chọn số tháng bên dưới.",
+        title=f"Đã chọn: {pkg['emoji']} {pkg['name']}",
+        description="📅 Chọn số tháng bên dưới.",
         color=discord.Color.gold(),
     )
     return embed
