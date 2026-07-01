@@ -12,6 +12,11 @@ from bot.embeds import build_donate_list_embed, build_dm_success_embed
 from bot.views import SimplePackageView, PublicDonateView
 
 
+async def is_owner(interaction: discord.Interaction) -> bool:
+    """Chỉ cho phép chủ sở hữu bot sử dụng lệnh."""
+    return await interaction.client.is_owner(interaction.user)
+
+
 def register_commands(bot: discord.ext.commands.Bot) -> None:
     """Đăng ký tất cả slash commands vào bot tree."""
 
@@ -22,8 +27,8 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         await interaction.response.send_message(view=view, ephemeral=True)
 
     # ── /donate_setup — Gửi panel donate vào kênh hiện tại ───────
-    @bot.tree.command(name="donate_setup", description="[Admin] Gửi panel donate công khai")
-    @app_commands.checks.has_permissions(administrator=True)
+    @bot.tree.command(name="donate_setup", description="[Owner] Gửi panel donate công khai")
+    @app_commands.check(is_owner)
     async def donate_setup(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         data = load_data()
@@ -50,8 +55,8 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         await interaction.followup.send("✅ Panel donate đã được gửi thành công!", ephemeral=True)
 
     # ── /donate_list — Xem 10 đơn gần nhất ──────────────────────
-    @bot.tree.command(name="donate_list", description="[Admin] Xem danh sách đơn donate gần nhất")
-    @app_commands.checks.has_permissions(administrator=True)
+    @bot.tree.command(name="donate_list", description="[Owner] Xem danh sách đơn donate gần nhất")
+    @app_commands.check(is_owner)
     async def donate_list(interaction: discord.Interaction):
         data = load_data()
         donations = data.get("donations", [])
@@ -84,7 +89,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             app_commands.Choice(name="3 tháng", value=3),
         ],
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.check(is_owner)
     async def add_role_month(
         interaction: discord.Interaction,
         member: discord.Member,
@@ -165,10 +170,10 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
     # ── /role_list — Xem danh sách role đang hoạt động ──────────
     @bot.tree.command(
         name="role_list",
-        description="[Admin] Xem danh sách role donate đang hoạt động và thời gian hết hạn",
+        description="[Owner] Xem danh sách role donate đang hoạt động và thời gian hết hạn",
     )
     @app_commands.describe(member="Thành viên cụ thể (bỏ trống để xem tất cả)")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.check(is_owner)
     async def role_list(interaction: discord.Interaction, member: discord.Member = None):
         data = load_data()
         now = datetime.now()
@@ -224,7 +229,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         code="Mã đơn donate (ví dụ: KAIA123456)",
         new_date="Ngày hết hạn mới (định dạng: DD/MM/YYYY hoặc DD/MM/YYYY HH:MM)",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.check(is_owner)
     async def role_edit_expire(
         interaction: discord.Interaction,
         code: str,
@@ -289,8 +294,8 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
     @add_role_month.error
     @role_list.error
     @role_edit_expire.error
-    async def admin_command_error(interaction: discord.Interaction, error: Exception):
-        if isinstance(error, app_commands.MissingPermissions):
+    async def owner_command_error(interaction: discord.Interaction, error: Exception):
+        if isinstance(error, app_commands.CheckFailure):
             await interaction.response.send_message(
-                "❌ Bạn không có quyền sử dụng lệnh này.", ephemeral=True
+                "❌ Lệnh này chỉ dành cho chủ sở hữu bot.", ephemeral=True
             )
