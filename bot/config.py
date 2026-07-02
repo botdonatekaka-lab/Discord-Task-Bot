@@ -2,8 +2,6 @@
 # config.py — Cấu hình bot: hằng số, gói donate, thông tin ngân hàng
 # ================================================================
 
-import discord
-
 # ── Thông tin ngân hàng ──────────────────────────────────────────
 BANK_NAME = "MBBank"
 BANK_ACCOUNT = "78911112003"
@@ -19,7 +17,7 @@ PRIVILEGE_CHANNEL_ID = 1513291802193559652 # Kênh giới thiệu đặc quyền
 PACKAGES = {
     "dang_cap_khac": {
         "name": "Đẳng Cấp Khác",
-        "emoji": discord.PartialEmoji(name="emoji_70", id=1522020810687250432),
+        "emoji": "👑",
         "role_id": 1512910004548669500,
         "prices": {
             "1": 199000,
@@ -29,7 +27,7 @@ PACKAGES = {
     },
     "co_dong_lon": {
         "name": "Cổ Đông Lớn",
-        "emoji": discord.PartialEmoji(name="emoji_69", id=1522020653069242452),
+        "emoji": "💎",
         "role_id": 1512099086990577675,
         "prices": {
             "1": 99000,
@@ -39,7 +37,7 @@ PACKAGES = {
     },
     "co_dong_nho": {
         "name": "Cổ Đông Nhỏ",
-        "emoji": discord.PartialEmoji(name="emoji_67", id=1522020541425520711),
+        "emoji": "⭐",
         "role_id": 1514290379787079881,
         "prices": {
             "1": 25000,
@@ -49,7 +47,7 @@ PACKAGES = {
     },
     "cu_dan_dong_gop": {
         "name": "Cư Dân Đóng Góp",
-        "emoji": discord.PartialEmoji(name="emoji_68", id=1522020595263471847),
+        "emoji": "🏠",
         "role_id": 1512799562149003275,
         "prices": {
             "1": 10000,
