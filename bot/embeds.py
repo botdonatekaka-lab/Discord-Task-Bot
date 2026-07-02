@@ -22,7 +22,7 @@ def build_package_embed(pkg: dict) -> discord.Embed:
     """Embed hiển thị gói đã chọn — chỉ tên, không có bảng giá."""
     embed = discord.Embed(
         title=f"Đã chọn: {pkg['emoji']} {pkg['name']}",
-        description="📅 Chọn số tháng bên dưới.",
+        description="Chọn số tháng bên dưới.",
         color=discord.Color.gold(),
     )
     return embed
