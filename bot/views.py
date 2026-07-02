@@ -374,8 +374,9 @@ class PublicDonateView(View):
     )
     async def donate_button(self, interaction: discord.Interaction, button: Button):
         """Mở menu chọn gói donate (ephemeral)."""
+        await interaction.response.defer(ephemeral=True)
         view = SimplePackageView(default_target=interaction.user)
-        await interaction.response.send_message(view=view, ephemeral=True)
+        await interaction.followup.send(view=view, ephemeral=True)
 
     @discord.ui.button(
         label="🎟️ ĐẶC QUYỀN",
@@ -385,7 +386,8 @@ class PublicDonateView(View):
     )
     async def privilege_button(self, interaction: discord.Interaction, button: Button):
         """Gửi link đến kênh đặc quyền (ephemeral)."""
-        await interaction.response.send_message(
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(
             f"Để xem các đặc quyền riêng biệt, hãy nhấp vào: <#{PRIVILEGE_CHANNEL_ID}>",
             ephemeral=True,
         )
