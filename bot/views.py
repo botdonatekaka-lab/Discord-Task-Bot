@@ -254,11 +254,12 @@ class MonthSelect(Select):
             discord.SelectOption(
                 label=f"{m} tháng — {fmt_money(p)}",
                 value=m,
+                emoji="📅",
             )
             for m, p in pkg["prices"].items()
         ]
         options.append(discord.SelectOption(label="Số Khác (tùy chọn)", value="custom", emoji="✍️"))
-        super().__init__(placeholder="Chọn số tháng...", options=options)
+        super().__init__(placeholder="📅 Chọn số tháng...", options=options)
 
     async def callback(self, interaction: discord.Interaction):
         months = self.values[0]
