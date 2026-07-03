@@ -13,7 +13,6 @@ def build_panel_embed() -> discord.Embed:
     embed = discord.Embed(
         title="ỦNG HỘ CHO SEVER",
         description=(
-            "💸 THÔNG TIN DONATE\n"
             "Phí duy trì: 10.000 VND\n"
             "Hãy chọn nút bên dưới nhé!"
         ),
