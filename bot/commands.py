@@ -310,12 +310,114 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.set_footer(text=f"Chỉnh bởi: {interaction.user.display_name}")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    # ── /check — Đếm số bình luận của thành viên trong một chủ đề ─
+    @bot.tree.command(
+        name="check",
+        description="Kiểm tra số lần bình luận của một thành viên trong chủ đề",
+    )
+    @app_commands.describe(
+        thread="Chủ đề (thread/forum post) cần kiểm tra",
+        member="Thành viên muốn kiểm tra (bỏ trống = chính bạn)",
+    )
+    async def check_comments(
+        interaction: discord.Interaction,
+        thread: discord.Thread,
+        member: discord.Member = None,
+    ):
+        target = member or interaction.user
+        await interaction.response.defer(ephemeral=True)
+
+        count = 0
+        async for msg in thread.history(limit=None):
+            if msg.author.id == target.id:
+                count += 1
+
+        embed = discord.Embed(
+            title="💬 Thống kê bình luận",
+            color=discord.Color.blurple(),
+        )
+        embed.set_thumbnail(url=target.display_avatar.url)
+        embed.add_field(name="👤 Thành viên", value=target.mention, inline=True)
+        embed.add_field(name="📌 Chủ đề", value=thread.mention, inline=True)
+        embed.add_field(
+            name="💬 Số lần bình luận",
+            value=f"**{count}** lần",
+            inline=False,
+        )
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
+    # ── /event — Bật/tắt chế độ chống trùng số trong chủ đề ──────
+    @bot.tree.command(
+        name="event",
+        description="[Owner] Bật/tắt chế độ chống trùng số trong một chủ đề",
+    )
+    @app_commands.describe(
+        thread="Chủ đề cần bật/tắt event",
+        action="Bật hoặc tắt event",
+    )
+    @app_commands.choices(action=[
+        app_commands.Choice(name="🟢 Bật", value="start"),
+        app_commands.Choice(name="🔴 Tắt", value="stop"),
+    ])
+    @app_commands.check(is_owner)
+    async def event_command(
+        interaction: discord.Interaction,
+        thread: discord.Thread,
+        action: str,
+    ):
+        from bot.event import load_events, save_events
+
+        data = load_events()
+        tid = str(thread.id)
+
+        if action == "start":
+            if tid in data["active_events"]:
+                await interaction.response.send_message(
+                    f"⚠️ Event trong {thread.mention} đã đang bật rồi.", ephemeral=True
+                )
+                return
+            data["active_events"][tid] = {
+                "numbers": {},
+                "created_by": str(interaction.user.id),
+                "created_at": datetime.now().isoformat(),
+            }
+            save_events(data)
+            embed = discord.Embed(
+                title="🟢 Event đã bật",
+                description=(
+                    f"Chủ đề {thread.mention} đang trong chế độ **chống trùng số**.\n"
+                    f"Mọi bình luận trùng số sẽ bị **tự động xoá** và thành viên được thông báo."
+                ),
+                color=discord.Color.green(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+        else:  # stop
+            if tid not in data["active_events"]:
+                await interaction.response.send_message(
+                    f"⚠️ Event trong {thread.mention} chưa được bật.", ephemeral=True
+                )
+                return
+            event_info = data["active_events"].pop(tid)
+            save_events(data)
+            total_numbers = len(event_info.get("numbers", {}))
+            embed = discord.Embed(
+                title="🔴 Event đã tắt",
+                description=(
+                    f"Đã dừng event tại {thread.mention}.\n"
+                    f"Tổng số đã được đăng ký: **{total_numbers}** số."
+                ),
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
     # ── Error handlers ────────────────────────────────────────────
     @donate_setup.error
     @donate_list.error
     @add_role_month.error
     @role_list.error
     @role_edit_expire.error
+    @event_command.error
     async def owner_command_error(interaction: discord.Interaction, error: Exception):
         if isinstance(error, app_commands.CheckFailure):
             await interaction.response.send_message(

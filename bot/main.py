@@ -9,6 +9,7 @@ from discord.ext import commands
 from bot.views import PublicDonateView, AdminApproveView
 from bot.data import load_data
 from bot.commands import register_commands
+from bot.event import handle_event_message, is_event_active
 
 
 # ── Khởi tạo bot ─────────────────────────────────────────────────
@@ -55,6 +56,16 @@ async def on_ready():
     setup_tasks(bot)
 
     print("🚀 Bot sẵn sàng hoạt động!")
+
+
+@bot.event
+async def on_message(message: discord.Message):
+    """Lắng nghe tin nhắn — xử lý chống trùng số trong event thread."""
+    if message.author.bot:
+        return
+    if isinstance(message.channel, discord.Thread) and is_event_active(message.channel.id):
+        await handle_event_message(message)
+    await bot.process_commands(message)
 
 
 # Đăng ký slash commands vào bot tree
