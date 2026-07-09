@@ -327,13 +327,16 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         target = member or interaction.user
         await interaction.response.defer(ephemeral=True)
 
-        # Thu thập toàn bộ tin nhắn của thành viên (cũ → mới)
+        # Quét tối đa 500 tin nhắn gần nhất (mới → cũ) để tránh chờ lâu
+        SCAN_LIMIT = 500
         messages = []
-        async for msg in thread.history(limit=None, oldest_first=True):
+        async for msg in thread.history(limit=SCAN_LIMIT):
             if msg.author.id == target.id:
                 messages.append(msg)
 
         count = len(messages)
+        # messages hiện theo thứ tự mới → cũ, đảo lại để hiển thị cũ → mới
+        messages.reverse()
 
         embed = discord.Embed(
             title="💬 Thống kê bình luận",
@@ -342,14 +345,17 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.set_thumbnail(url=target.display_avatar.url)
         embed.add_field(name="👤 Thành viên", value=target.mention, inline=True)
         embed.add_field(name="📌 Chủ đề", value=thread.mention, inline=True)
-        embed.add_field(name="💬 Số lần bình luận", value=f"**{count}** lần", inline=False)
+        embed.add_field(
+            name="💬 Số lần bình luận",
+            value=f"**{count}** lần" + (f" *(trong {SCAN_LIMIT} tin gần nhất)*" if count == SCAN_LIMIT else ""),
+            inline=False,
+        )
 
-        # Hiển thị nội dung từng bình luận (tối đa 10 tin gần nhất)
+        # Hiển thị nội dung (tối đa 10 tin gần nhất)
         if messages:
-            show = messages[-10:]  # Lấy 10 tin nhắn gần nhất
+            show = messages[-10:]
             lines = []
             for i, msg in enumerate(show, start=count - len(show) + 1):
-                # Rút gọn nội dung nếu quá dài
                 content = msg.content if msg.content else "*(không có text)*"
                 if len(content) > 60:
                     content = content[:57] + "..."
