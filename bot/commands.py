@@ -327,10 +327,13 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         target = member or interaction.user
         await interaction.response.defer(ephemeral=True)
 
-        count = 0
-        async for msg in thread.history(limit=None):
+        # Thu thập toàn bộ tin nhắn của thành viên (cũ → mới)
+        messages = []
+        async for msg in thread.history(limit=None, oldest_first=True):
             if msg.author.id == target.id:
-                count += 1
+                messages.append(msg)
+
+        count = len(messages)
 
         embed = discord.Embed(
             title="💬 Thống kê bình luận",
@@ -339,11 +342,26 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.set_thumbnail(url=target.display_avatar.url)
         embed.add_field(name="👤 Thành viên", value=target.mention, inline=True)
         embed.add_field(name="📌 Chủ đề", value=thread.mention, inline=True)
-        embed.add_field(
-            name="💬 Số lần bình luận",
-            value=f"**{count}** lần",
-            inline=False,
-        )
+        embed.add_field(name="💬 Số lần bình luận", value=f"**{count}** lần", inline=False)
+
+        # Hiển thị nội dung từng bình luận (tối đa 10 tin gần nhất)
+        if messages:
+            show = messages[-10:]  # Lấy 10 tin nhắn gần nhất
+            lines = []
+            for i, msg in enumerate(show, start=count - len(show) + 1):
+                # Rút gọn nội dung nếu quá dài
+                content = msg.content if msg.content else "*(không có text)*"
+                if len(content) > 60:
+                    content = content[:57] + "..."
+                ts = msg.created_at.strftime("%d/%m %H:%M")
+                lines.append(f"`{i}.` [{ts}]({msg.jump_url}) {content}")
+
+            embed.add_field(
+                name=f"📋 Nội dung bình luận{' (10 gần nhất)' if count > 10 else ''}",
+                value="\n".join(lines),
+                inline=False,
+            )
+
         await interaction.followup.send(embed=embed, ephemeral=True)
 
     # ── /event — Bật/tắt chế độ chống trùng số trong chủ đề ──────
