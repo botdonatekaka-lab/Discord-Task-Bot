@@ -44,7 +44,7 @@ async def on_ready():
 
     print(f"🔄 Đã khôi phục {pending_count} view đang pending")
 
-    # Sync slash commands lên Discord
+    # Sync slash commands lên Discord (global)
     try:
         synced = await bot.tree.sync()
         print(f"⚙️  Đã sync {len(synced)} slash command(s)")
