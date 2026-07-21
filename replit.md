@@ -1,36 +1,35 @@
-# [Project name]
+# Discord Donation Bot
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A Python Discord bot that manages donation packages, admin approval flows, and event number-tracking for a Vietnamese Discord server.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `python run.py` — start the bot (or use the "Discord Bot" workflow)
+- Required secret: `DISCORD_TOKEN` — Discord bot token from the Developer Portal
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Python 3.11, discord.py 2.x
+- JSON file-based persistence (`bot/donate_data.json`, `bot/event_data.json`)
+- uv for dependency management (`pyproject.toml` / `uv.lock`)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `run.py` — entry point
+- `bot/main.py` — bot setup, on_ready, on_message
+- `bot/config.py` — channel IDs, bank info, donation packages
+- `bot/commands.py` — slash commands
+- `bot/views.py` — Discord UI components (buttons/modals)
+- `bot/data.py` — JSON data helpers
+- `bot/event.py` — event thread number-tracking logic
+- `bot/tasks.py` — background tasks
+- `bot/embeds.py` — embed builders
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Persistent views are re-registered on `on_ready` so pending donation approvals survive restarts.
+- All state is stored in JSON files (no database required).
+- Slash commands are synced globally on startup.
 
 ## User preferences
 
@@ -38,8 +37,5 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Channel IDs and role IDs in `bot/config.py` are hardcoded for the target Discord server — update them if the bot moves to a different server.
+- Custom emoji IDs in `bot/config.py` must exist on the server the bot is in.
