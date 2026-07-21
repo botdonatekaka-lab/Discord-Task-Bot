@@ -120,7 +120,7 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     # Gửi lời cảm ơn vào kênh thông báo
     thanks_channel = guild.get_channel(THANKS_CHANNEL_ID)
     if thanks_channel:
-        user_mention = f"@{target.display_name}" if target else f"@{donation.get('target_name', donation['target_id'])}"
+        user_mention = target.display_name if target else donation.get('target_name', str(donation['target_id']))
         role_mention = role.mention if role else f"**{pkg['name']}**"
         thanks_embed = build_thanks_embed(user_mention, role_mention, target)
         if target:
