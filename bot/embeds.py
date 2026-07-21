@@ -70,9 +70,9 @@ def build_admin_embed(
         name=f"{donor.display_name} ({donor})",
         icon_url=donor.display_avatar.url,
     )
-    embed.add_field(name="👤 Người donate", value=donor.mention, inline=True)
+    embed.add_field(name="👤 Người donate", value=donor.display_name, inline=True)
     if target.id != donor.id:
-        embed.add_field(name="🎁 Donate cho", value=target.mention, inline=True)
+        embed.add_field(name="🎁 Donate cho", value=target.display_name, inline=True)
     embed.add_field(name="📦 Gói", value=pkg["name"], inline=True)
     embed.add_field(name="📅 Số tháng", value=fmt_months(months), inline=True)
     embed.add_field(name="💰 Số tiền", value=fmt_money(amount), inline=True)
