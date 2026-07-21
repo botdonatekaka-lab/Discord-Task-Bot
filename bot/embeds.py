@@ -146,7 +146,7 @@ def build_thanks_embed(
         color=discord.Color.gold(),
     )
     if target:
-        embed.set_thumbnail(url=target.display_avatar.url)
+        embed.set_thumbnail(url="attachment://avatar.png")
     return embed
 
 

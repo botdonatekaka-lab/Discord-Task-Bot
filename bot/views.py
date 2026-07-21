@@ -3,6 +3,7 @@
 # ================================================================
 
 from datetime import datetime
+import io
 import discord
 from discord.ui import Button, Select, Modal, TextInput, View
 
@@ -121,7 +122,13 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     if thanks_channel:
         user_mention = f"@{target.display_name}" if target else f"@{donation.get('target_name', donation['target_id'])}"
         role_mention = role.mention if role else f"**{pkg['name']}**"
-        await thanks_channel.send(embed=build_thanks_embed(user_mention, role_mention, target))
+        thanks_embed = build_thanks_embed(user_mention, role_mention, target)
+        if target:
+            avatar_bytes = await target.display_avatar.read()
+            avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
+            await thanks_channel.send(file=avatar_file, embed=thanks_embed)
+        else:
+            await thanks_channel.send(embed=thanks_embed)
 
     # Làm mới panel
     from bot.views import refresh_panel
