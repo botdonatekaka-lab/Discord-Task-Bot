@@ -1,41 +1,43 @@
 # Discord Donation Bot
 
-A Python Discord bot that manages donation packages, admin approval flows, and event number-tracking for a Vietnamese Discord server.
-
-## Run & Operate
-
-- `python run.py` — start the bot (or use the "Discord Bot" workflow)
-- Required secret: `DISCORD_TOKEN` — Discord bot token from the Developer Portal
+A Python Discord bot (discord.py) that manages community donations — users submit donate requests via interactive panels, admins approve/reject them, and the bot assigns roles automatically.
 
 ## Stack
 
-- Python 3.11, discord.py 2.x
-- JSON file-based persistence (`bot/donate_data.json`, `bot/event_data.json`)
-- uv for dependency management (`pyproject.toml` / `uv.lock`)
+- **Language:** Python 3.11
+- **Library:** discord.py 2.7.1
+- **Storage:** JSON files (`bot/donate_data.json`, `bot/event_data.json`)
 
-## Where things live
+## How to run
 
-- `run.py` — entry point
-- `bot/main.py` — bot setup, on_ready, on_message
-- `bot/config.py` — channel IDs, bank info, donation packages
-- `bot/commands.py` — slash commands
-- `bot/views.py` — Discord UI components (buttons/modals)
-- `bot/data.py` — JSON data helpers
-- `bot/event.py` — event thread number-tracking logic
-- `bot/tasks.py` — background tasks
-- `bot/embeds.py` — embed builders
+The workflow **Discord Bot** runs `python run.py`.
 
-## Architecture decisions
+### Required secret
 
-- Persistent views are re-registered on `on_ready` so pending donation approvals survive restarts.
-- All state is stored in JSON files (no database required).
-- Slash commands are synced globally on startup.
+| Key | Description |
+|-----|-------------|
+| `DISCORD_TOKEN` | Bot token from the Discord Developer Portal |
+
+## Project structure
+
+```
+bot/
+  main.py       — Entry point: initializes bot, registers events & commands
+  commands.py   — Slash commands
+  views.py      — Discord UI views (buttons, modals)
+  embeds.py     — Embed builders
+  data.py       — JSON data helpers
+  tasks.py      — Background tasks
+  event.py      — Event thread logic
+  config.py     — Channel IDs, role IDs, donate packages, bank info
+run.py          — Start script (runs bot/main.py)
+```
+
+## Configuration
+
+Edit `bot/config.py` to update:
+- Bank account details
+- Discord channel IDs (admin channel, thanks channel, privilege channel)
+- Donate packages (names, prices, role IDs, emojis)
 
 ## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-- Channel IDs and role IDs in `bot/config.py` are hardcoded for the target Discord server — update them if the bot moves to a different server.
-- Custom emoji IDs in `bot/config.py` must exist on the server the bot is in.
