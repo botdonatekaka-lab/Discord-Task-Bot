@@ -393,6 +393,12 @@ class PublicDonateView(View):
     """View panel công khai — persistent, tồn tại sau khi bot restart."""
     def __init__(self):
         super().__init__(timeout=None)
+        self.add_item(discord.ui.Button(
+            label="🎟️ ĐẶC QUYỀN",
+            style=discord.ButtonStyle.link,
+            url="https://discord.com/channels/1363986043509932093/1513291802193559652",
+            row=0,
+        ))
 
     @discord.ui.button(
         label="💸 BẤM ĐỂ DONATE",
@@ -405,17 +411,3 @@ class PublicDonateView(View):
         await interaction.response.defer(ephemeral=True)
         view = SimplePackageView(default_target=interaction.user)
         await interaction.followup.send(view=view, ephemeral=True)
-
-    @discord.ui.button(
-        label="🎟️ ĐẶC QUYỀN",
-        style=discord.ButtonStyle.secondary,
-        custom_id="public_privilege_btn",
-        row=0,
-    )
-    async def privilege_button(self, interaction: discord.Interaction, button: Button):
-        """Gửi link đến kênh đặc quyền (ephemeral)."""
-        await interaction.response.defer(ephemeral=True)
-        await interaction.followup.send(
-            f"Để xem các đặc quyền riêng biệt, hãy nhấp vào: <#{PRIVILEGE_CHANNEL_ID}>",
-            ephemeral=True,
-        )
