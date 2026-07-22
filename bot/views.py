@@ -141,16 +141,9 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
         role_mention = role.mention if role else f"**{pkg['name']}**"
         thanks_embed = build_thanks_embed(target, role_mention)
         if target and isinstance(target, discord.Member):
-            # Gửi file + embed cùng 1 tin nhắn (chưa có thumbnail)
             avatar_bytes = await target.display_avatar.read()
             avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
-            sent = await thanks_channel.send(content=target.mention, file=avatar_file, embed=thanks_embed)
-            # Lấy URL CDN thực của attachment rồi cập nhật thumbnail
-            # cdn.discordapp.com/attachments/... → Discord mobile mở native viewer, không mở browser
-            if sent.attachments:
-                updated_embed = sent.embeds[0] if sent.embeds else thanks_embed
-                updated_embed.set_thumbnail(url=sent.attachments[0].url)
-                await sent.edit(embed=updated_embed)
+            await thanks_channel.send(content=target.mention, file=avatar_file, embed=thanks_embed)
         else:
             await thanks_channel.send(embed=thanks_embed)
 
