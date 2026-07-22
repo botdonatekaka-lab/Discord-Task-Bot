@@ -48,8 +48,9 @@ async def check_expired_roles(bot: commands.Bot):
 
         # Tìm thành viên trong tất cả guild để thu hồi role
         for guild in bot.guilds:
-            member = guild.get_member(int(donation["target_id"]))
-            if not member:
+            try:
+                member = await guild.fetch_member(int(donation["target_id"]))
+            except discord.NotFound:
                 continue
 
             role = guild.get_role(pkg["role_id"])

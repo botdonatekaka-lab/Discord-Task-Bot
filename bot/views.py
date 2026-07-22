@@ -164,7 +164,10 @@ async def do_reject(interaction: discord.Interaction, code: str) -> None:
     await interaction.message.edit(embed=embed, view=None)
 
     # DM thông báo cho người donate
-    target = interaction.guild.get_member(int(donation["target_id"]))
+    try:
+        target = await interaction.guild.fetch_member(int(donation["target_id"]))
+    except discord.NotFound:
+        target = None
     if target:
         try:
             await target.send(embed=build_reject_dm_embed(code))
