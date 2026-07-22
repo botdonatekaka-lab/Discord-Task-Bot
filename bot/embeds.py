@@ -148,7 +148,7 @@ def build_thanks_embed(
 
     embed = discord.Embed(
         description=(
-            f"💎✨ Xin gửi lời cảm ơn đặc biệt đến {user_display} vì đã donate cho server!\n\n"
+            f"💎✨ Xin gửi lời cảm ơn đặc biệt đến {user_display} đã donate cho server!\n\n"
             "Nhờ những người tuyệt vời như bạn mà bot có thể tiếp tục được duy trì, nâng cấp "
             "và mang đến nhiều trải nghiệm tốt hơn cho mọi người. 🚀\n\n"
             f"🎖️ Role {role_mention} đã được trao như một lời cảm ơn nhỏ từ server!"
