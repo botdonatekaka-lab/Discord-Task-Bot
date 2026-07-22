@@ -152,8 +152,7 @@ def build_thanks_embed(
         ),
         color=discord.Color.gold(),
     )
-    if target:
-        embed.set_thumbnail(url="attachment://avatar.png")
+    # Thumbnail sẽ được set bên ngoài sau khi có CDN URL thực của attachment
     return embed
 
 
