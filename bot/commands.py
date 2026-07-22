@@ -442,16 +442,18 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    # ── /welcome — Cấu hình kênh và thời gian xóa embed chào mừng ─
+    # ── /welcome — Cấu hình kênh, nội dung và thời gian xóa embed chào mừng ─
     @bot.tree.command(name="welcome", description="[Admin] Cấu hình hệ thống chào mừng thành viên mới")
     @app_commands.describe(
         channel="Kênh gửi Embed chào mừng",
+        message="Nội dung chào mừng. Dùng {user} để mention thành viên mới",
         delete_after="Số phút tự xóa Embed (0 = không tự xóa)",
     )
     @app_commands.default_permissions(administrator=True)
     async def welcome_config(
         interaction: discord.Interaction,
         channel: discord.TextChannel,
+        message: str,
         delete_after: int,
     ):
         from bot.data import load_data, save_data
@@ -464,14 +466,13 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         data = load_data()
         data["welcome_config"] = {
             "channel_id": channel.id,
+            "message": message,
             "delete_after": delete_after,
         }
         save_data(data)
 
-        if delete_after > 0:
-            delete_text = f"tự xóa sau **{delete_after} phút**"
-        else:
-            delete_text = "**không tự xóa**"
+        delete_text = f"tự xóa sau **{delete_after} phút**" if delete_after > 0 else "**không tự xóa**"
+        preview = message.replace("{user}", interaction.user.mention)
 
         embed = discord.Embed(
             title="✅ Đã cập nhật cấu hình chào mừng",
@@ -479,6 +480,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         )
         embed.add_field(name="📢 Kênh", value=channel.mention, inline=True)
         embed.add_field(name="⏱️ Tự xóa", value=delete_text, inline=True)
+        embed.add_field(name="💬 Nội dung (xem trước)", value=preview, inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # ── Error handlers ────────────────────────────────────────────

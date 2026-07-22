@@ -1922,5 +1922,9 @@
     }
   ],
   "panel_message_id": "1529385822476832951",
-  "panel_channel_id": "1514934088870662184"
+  "panel_channel_id": "1514934088870662184",
+  "welcome_config": {
+    "channel_id": 1512902714873352373,
+    "delete_after": 3
+  }
 }

@@ -64,9 +64,13 @@ async def on_member_join(member: discord.Member):
     """Gửi embed chào mừng theo cấu hình đã lưu, tự xóa nếu delete_after > 0."""
     from bot.data import load_data
     data = load_data()
-    cfg = data.get("welcome_config", {})
+    cfg = data.get("welcome_config")
+    if not cfg:
+        return  # Chưa cấu hình — không gửi gì cả
+
     channel_id = cfg.get("channel_id")
     delete_after = cfg.get("delete_after", 0)
+    message = cfg.get("message", "{user} đã tham gia server!")
 
     if not channel_id:
         return
@@ -74,10 +78,8 @@ async def on_member_join(member: discord.Member):
     if not channel:
         return
 
-    embed = discord.Embed(
-        description=f"<a:chich_dien:1524723069476798648> {member.mention} đã bị dí điện bắt cóc vào server!",
-        color=0x2B2D31,
-    )
+    description = message.replace("{user}", member.mention)
+    embed = discord.Embed(description=description, color=0x2B2D31)
     msg = await channel.send(embed=embed)
 
     if delete_after and delete_after > 0:
