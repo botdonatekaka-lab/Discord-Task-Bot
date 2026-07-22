@@ -3,6 +3,7 @@
 # ================================================================
 
 from datetime import datetime
+import io
 import discord
 from discord.ui import Button, Select, Modal, TextInput, View
 
@@ -141,7 +142,9 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
         thanks_embed = build_thanks_embed(target, role_mention)
         if target and isinstance(target, discord.Member):
             # Ping mention chỉ khi target vẫn là thành viên trong server
-            await thanks_channel.send(content=target.mention, embed=thanks_embed)
+            avatar_bytes = await target.display_avatar.read()
+            avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
+            await thanks_channel.send(content=target.mention, file=avatar_file, embed=thanks_embed)
         else:
             await thanks_channel.send(embed=thanks_embed)
 
