@@ -110,6 +110,11 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     if target:
         try:
             is_gift = donation["user_id"] != donation["target_id"]
+            # ── DEBUG ────────────────────────────────────────────────
+            print(f"[DEBUG dm] type(target)  = {type(target)}")
+            print(f"[DEBUG dm] repr(target)  = {repr(target)}")
+            print(f"[DEBUG dm] is_gift       = {is_gift}")
+            # ────────────────────────────────────────────────────────
             if is_gift:
                 try:
                     donor = await guild.fetch_member(int(donation["user_id"]))
@@ -139,6 +144,11 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     thanks_channel = guild.get_channel(THANKS_CHANNEL_ID)
     if thanks_channel:
         role_mention = role.mention if role else f"**{pkg['name']}**"
+        # ── DEBUG ────────────────────────────────────────────────
+        print(f"[DEBUG thanks] type(target)  = {type(target)}")
+        print(f"[DEBUG thanks] repr(target)  = {repr(target)}")
+        print(f"[DEBUG thanks] target.mention = {target.mention if target else 'N/A'}")
+        # ────────────────────────────────────────────────────────
         thanks_embed = build_thanks_embed(target, role_mention)
         if target:
             avatar_bytes = await target.display_avatar.read()
