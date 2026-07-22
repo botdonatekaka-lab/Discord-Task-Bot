@@ -106,6 +106,14 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     if target:
         try:
             is_gift = donation["user_id"] != donation["target_id"]
+            if is_gift:
+                try:
+                    donor = await guild.fetch_member(int(donation["user_id"]))
+                except discord.NotFound:
+                    donor = None
+                donor_mention = donor.mention if donor else donation.get("user_name", "người donate")
+            else:
+                donor_mention = target.mention
             dm_embed = build_dm_success_embed(
                 pkg=pkg,
                 amount=donation["amount"],
@@ -113,7 +121,7 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
                 created_at=datetime.fromisoformat(donation["created_at"]).strftime("%d/%m/%Y %H:%M:%S"),
                 expires_at=expires_dt.strftime("%d/%m/%Y %H:%M:%S"),
                 is_gift=is_gift,
-                donor_mention=f"<@{donation['user_id']}>",
+                donor_mention=donor_mention,
                 target=target,
             )
             await target.send(embed=dm_embed)
