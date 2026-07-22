@@ -206,7 +206,14 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             # Màu cảnh báo nếu sắp hết hạn trong 3 ngày
             warning = " ⚠️" if days_left <= 3 else ""
 
-            target_str = f"<@{d['target_id']}>"
+            try:
+                t = await interaction.guild.fetch_member(int(d["target_id"]))
+            except discord.NotFound:
+                try:
+                    t = await interaction.client.fetch_user(int(d["target_id"]))
+                except discord.NotFound:
+                    t = None
+            target_str = t.mention if t else d.get("target_name", str(d["target_id"]))
             embed.add_field(
                 name=f"📦 {d['package_name']} — `{d['code']}`{warning}",
                 value=(

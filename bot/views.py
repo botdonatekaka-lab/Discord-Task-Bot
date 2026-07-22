@@ -64,10 +64,14 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
         return
 
     guild = interaction.guild
+    bot = interaction.client
     try:
         target = await guild.fetch_member(int(donation["target_id"]))
     except discord.NotFound:
-        target = None
+        try:
+            target = await bot.fetch_user(int(donation["target_id"]))
+        except discord.NotFound:
+            target = None
     pkg = PACKAGES[donation["package_key"]]
     role = guild.get_role(pkg["role_id"])
 
@@ -110,7 +114,10 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
                 try:
                     donor = await guild.fetch_member(int(donation["user_id"]))
                 except discord.NotFound:
-                    donor = None
+                    try:
+                        donor = await bot.fetch_user(int(donation["user_id"]))
+                    except discord.NotFound:
+                        donor = None
                 donor_mention = donor.mention if donor else donation.get("user_name", "người donate")
             else:
                 donor_mention = target.mention

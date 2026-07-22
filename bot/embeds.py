@@ -131,7 +131,7 @@ def build_dm_expired_embed(pkg: dict, code: str) -> discord.Embed:
 
 
 def build_thanks_embed(
-    target: discord.Member | None,
+    target: discord.Member | discord.User | None,
     role_mention: str,
 ) -> discord.Embed:
     """Embed gửi vào kênh cảm ơn sau khi đơn được duyệt."""
