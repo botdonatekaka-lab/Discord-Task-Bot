@@ -61,20 +61,31 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member: discord.Member):
-    """Gửi embed chào mừng vào kênh chỉ định, tự xóa sau 5 phút."""
-    channel = member.guild.get_channel(1512092808826327051)
+    """Gửi embed chào mừng theo cấu hình đã lưu, tự xóa nếu delete_after > 0."""
+    from bot.data import load_data
+    data = load_data()
+    cfg = data.get("welcome_config", {})
+    channel_id = cfg.get("channel_id")
+    delete_after = cfg.get("delete_after", 0)
+
+    if not channel_id:
+        return
+    channel = member.guild.get_channel(int(channel_id))
     if not channel:
         return
+
     embed = discord.Embed(
-        description=f"<a:chich_dien:1524723069476798648>{member.mention} đã bị dí điện bắt cóc vào server!",
+        description=f"<a:chich_dien:1524723069476798648> {member.mention} đã bị dí điện bắt cóc vào server!",
         color=0x2B2D31,
     )
     msg = await channel.send(embed=embed)
-    await asyncio.sleep(300)
-    try:
-        await msg.delete()
-    except Exception:
-        pass
+
+    if delete_after and delete_after > 0:
+        await asyncio.sleep(delete_after * 60)
+        try:
+            await msg.delete()
+        except Exception:
+            pass
 
 
 @bot.event

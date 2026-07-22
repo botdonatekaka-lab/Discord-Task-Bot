@@ -14,6 +14,10 @@ DEFAULT_DATA = {
     "donations": [],          # Danh sách tất cả đơn donate
     "panel_message_id": None, # ID tin nhắn panel đang hiển thị
     "panel_channel_id": None, # ID kênh chứa panel
+    "welcome_config": {
+        "channel_id": 1512092808826327051,  # Kênh chào mừng mặc định
+        "delete_after": 5,                  # Phút tự xóa (0 = không xóa)
+    },
 }
 
 
