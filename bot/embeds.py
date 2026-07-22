@@ -135,7 +135,14 @@ def build_thanks_embed(
     role_mention: str,
 ) -> discord.Embed:
     """Embed gửi vào kênh cảm ơn sau khi đơn được duyệt."""
-    user_display = target.mention if target else "người donate"
+    # Dùng mention chỉ khi target là Member (đang trong server) để tránh hiện raw ID
+    if target is None:
+        user_display = "người donate"
+    elif isinstance(target, discord.Member):
+        user_display = target.mention
+    else:
+        user_display = f"**{target.display_name}**"
+
     embed = discord.Embed(
         description=(
             f"💎✨ Xin gửi lời cảm ơn đặc biệt đến {user_display} vì đã donate cho server!\n\n"
@@ -145,8 +152,9 @@ def build_thanks_embed(
         ),
         color=discord.Color.gold(),
     )
+    # Dùng URL trực tiếp thay vì file đính kèm → click ảnh mở link ngoài trình duyệt
     if target:
-        embed.set_thumbnail(url="attachment://avatar.png")
+        embed.set_thumbnail(url=target.display_avatar.url)
     return embed
 
 
