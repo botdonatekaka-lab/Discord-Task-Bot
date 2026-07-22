@@ -133,15 +133,18 @@ def build_dm_expired_embed(pkg: dict, code: str) -> discord.Embed:
 def build_thanks_embed(
     target: discord.Member | discord.User | None,
     role_mention: str,
+    fallback_name: str = "người donate",
 ) -> discord.Embed:
     """Embed gửi vào kênh cảm ơn sau khi đơn được duyệt."""
-    # Dùng mention chỉ khi target là Member (đang trong server) để tránh hiện raw ID
+    # Ưu tiên: member.display_name → user.global_name → user.name → fallback_name
+    # Không dùng mention/ID — chỉ hiển thị tên in đậm
     if target is None:
-        user_display = "người donate"
+        name = fallback_name
     elif isinstance(target, discord.Member):
-        user_display = target.mention
+        name = target.display_name
     else:
-        user_display = f"**{target.display_name}**"
+        name = target.global_name or target.name or fallback_name
+    user_display = f"**{name}**"
 
     embed = discord.Embed(
         description=(

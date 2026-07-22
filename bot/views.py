@@ -139,7 +139,8 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     thanks_channel = guild.get_channel(THANKS_CHANNEL_ID)
     if thanks_channel:
         role_mention = role.mention if role else f"**{pkg['name']}**"
-        thanks_embed = build_thanks_embed(target, role_mention)
+        fallback_name = donation.get("target_name") or donation.get("user_name") or "người donate"
+        thanks_embed = build_thanks_embed(target, role_mention, fallback_name)
         if target and isinstance(target, discord.Member):
             avatar_bytes = await target.display_avatar.read()
             avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
