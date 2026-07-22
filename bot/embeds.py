@@ -152,9 +152,8 @@ def build_thanks_embed(
         ),
         color=discord.Color.gold(),
     )
-    # Dùng file đính kèm → click ảnh mở full lightbox trong Discord
-    if target:
-        embed.set_thumbnail(url="attachment://avatar.png")
+    # Không dùng thumbnail trong embed — ảnh sẽ được gửi riêng dưới dạng file đính kèm
+    # để Discord mobile mở bằng native viewer thay vì trình duyệt
     return embed
 
 

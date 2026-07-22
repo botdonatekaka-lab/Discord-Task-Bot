@@ -144,7 +144,10 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
             # Ping mention chỉ khi target vẫn là thành viên trong server
             avatar_bytes = await target.display_avatar.read()
             avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
-            await thanks_channel.send(content=target.mention, file=avatar_file, embed=thanks_embed)
+            # Gửi embed trước, sau đó gửi ảnh riêng — ảnh file đính kèm thông thường
+            # sẽ mở bằng Discord native viewer khi click, không mở trình duyệt
+            await thanks_channel.send(content=target.mention, embed=thanks_embed)
+            await thanks_channel.send(file=avatar_file)
         else:
             await thanks_channel.send(embed=thanks_embed)
 
