@@ -393,21 +393,19 @@ class PublicDonateView(View):
     """View panel công khai — persistent, tồn tại sau khi bot restart."""
     def __init__(self):
         super().__init__(timeout=None)
-        # Nút Donate — bên trái (thêm trước)
+        # Nút Donate — bên trái
         donate_btn = discord.ui.Button(
             label="💸 BẤM ĐỂ DONATE",
             style=discord.ButtonStyle.primary,
             custom_id="public_donate_btn",
-            row=0,
         )
         donate_btn.callback = self._donate_callback
         self.add_item(donate_btn)
-        # Nút Đặc Quyền — bên phải (thêm sau)
+        # Nút Đặc Quyền — bên phải (cùng hàng với nút donate)
         self.add_item(discord.ui.Button(
             label="🎟️ ĐẶC QUYỀN",
             style=discord.ButtonStyle.link,
             url="https://discord.com/channels/1363986043509932093/1513291802193559652",
-            row=0,
         ))
 
     async def _donate_callback(self, interaction: discord.Interaction):
