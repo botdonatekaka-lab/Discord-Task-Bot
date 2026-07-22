@@ -395,7 +395,7 @@ class PublicDonateView(View):
         super().__init__(timeout=None)
         # Nút Donate — bên trái
         donate_btn = discord.ui.Button(
-            label="💸 BẤM ĐỂ",
+            label="💸DONATE",
             style=discord.ButtonStyle.primary,
             custom_id="public_donate_btn",
         )
