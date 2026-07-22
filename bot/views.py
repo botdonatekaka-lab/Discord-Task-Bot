@@ -122,12 +122,10 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     if thanks_channel:
         role_mention = role.mention if role else f"**{pkg['name']}**"
         thanks_embed = build_thanks_embed(target, role_mention)
-        # Mention phải nằm trong content (ngoài embed) để Discord luôn render thành @TênNgườiDùng
-        mention_content = target.mention if target else None
         if target:
             avatar_bytes = await target.display_avatar.read()
             avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
-            await thanks_channel.send(content=mention_content, file=avatar_file, embed=thanks_embed)
+            await thanks_channel.send(file=avatar_file, embed=thanks_embed)
         else:
             await thanks_channel.send(embed=thanks_embed)
 

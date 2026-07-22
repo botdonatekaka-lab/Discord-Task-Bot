@@ -135,10 +135,10 @@ def build_thanks_embed(
     role_mention: str,
 ) -> discord.Embed:
     """Embed gửi vào kênh cảm ơn sau khi đơn được duyệt."""
-    user_display = target.display_name if target else "người donate"
+    user_display = target.mention if target else "người donate"
     embed = discord.Embed(
         description=(
-            f"💎✨ Xin gửi lời cảm ơn đặc biệt đến **{user_display}** vì đã donate cho server!\n\n"
+            f"💎✨ Xin gửi lời cảm ơn đặc biệt đến {user_display} vì đã donate cho server!\n\n"
             "Nhờ những người tuyệt vời như bạn mà bot có thể tiếp tục được duy trì, nâng cấp "
             "và mang đến nhiều trải nghiệm tốt hơn cho mọi người. 🚀\n\n"
             f"🎖️ Role {role_mention} đã được trao như một lời cảm ơn nhỏ từ server!"
