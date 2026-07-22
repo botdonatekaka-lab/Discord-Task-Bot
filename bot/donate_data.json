@@ -1702,8 +1702,24 @@
       "approved_at": "2026-07-22T05:56:33.360593",
       "approved_by": "1122110156847726632",
       "expires_at": "2026-08-21T05:56:33.360582"
+    },
+    {
+      "code": "KAIA375951",
+      "user_id": "1122110156847726632",
+      "user_name": "Nguyễn Viết Hiếu",
+      "target_id": "1122110156847726632",
+      "target_name": "Nguyễn Viết Hiếu",
+      "package_key": "dang_cap_khac",
+      "package_name": "Đẳng Cấp Khác",
+      "months": "1",
+      "amount": 199000,
+      "status": "approved",
+      "created_at": "2026-07-22T06:00:08.773132",
+      "approved_at": "2026-07-22T06:00:15.202556",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-21T06:00:15.202543"
     }
   ],
-  "panel_message_id": "1529366537855828050",
+  "panel_message_id": "1529367468915560613",
   "panel_channel_id": "1514934088870662184"
 }
