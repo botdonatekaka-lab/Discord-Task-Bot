@@ -1875,8 +1875,52 @@
       "approved_at": "2026-07-22T06:47:51.969828",
       "approved_by": "1122110156847726632",
       "expires_at": "2026-08-21T06:47:51.969818"
+    },
+    {
+      "code": "KAIA111899",
+      "user_id": "1364107503368929300",
+      "user_name": "tdiep",
+      "target_id": "1364107503368929300",
+      "target_name": "tdiep",
+      "package_key": "cu_dan_dong_gop",
+      "package_name": "Cư Dân Đóng Góp",
+      "months": "1",
+      "amount": 10000,
+      "status": "approved",
+      "created_at": "2026-07-22T07:12:15.086629",
+      "approved_at": "2026-07-22T07:13:10.778919",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-21T07:13:10.778908"
+    },
+    {
+      "code": "KAIA270154",
+      "user_id": "1428922304855015627",
+      "user_name": "Bucu",
+      "target_id": "1522297919942692914",
+      "target_name": "KaiX - Trợ Lí PlayHub",
+      "package_key": "cu_dan_dong_gop",
+      "package_name": "Cư Dân Đóng Góp",
+      "months": "1",
+      "amount": 10000,
+      "status": "pending",
+      "created_at": "2026-07-22T07:21:51.579041"
+    },
+    {
+      "code": "KAIA279075",
+      "user_id": "1122110156847726632",
+      "user_name": "Nguyễn Viết Hiếu",
+      "target_id": "1122110156847726632",
+      "target_name": "Nguyễn Viết Hiếu",
+      "package_key": "dang_cap_khac",
+      "package_name": "Đẳng Cấp Khác",
+      "months": "1",
+      "amount": 199000,
+      "status": "rejected",
+      "created_at": "2026-07-22T07:24:30.641513",
+      "rejected_at": "2026-07-22T07:24:56.023620",
+      "rejected_by": "1122110156847726632"
     }
   ],
-  "panel_message_id": "1529385290521903185",
+  "panel_message_id": "1529385822476832951",
   "panel_channel_id": "1514934088870662184"
 }
