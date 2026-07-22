@@ -152,8 +152,8 @@ def build_thanks_embed(
         ),
         color=discord.Color.gold(),
     )
-    # Không set thumbnail trong embed — ảnh gửi kèm cùng message dưới dạng attachment
-    # → Discord mobile mở bằng native viewer, không mở trình duyệt
+    if target:
+        embed.set_thumbnail(url="attachment://avatar.png")
     return embed
 
 
