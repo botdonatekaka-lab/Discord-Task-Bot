@@ -574,6 +574,35 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.set_footer(text=f"Tổng: {len(creators)} creator")
         await interaction.followup.send(embed=embed)
 
+    # ── /creator-remove — Xóa creator khỏi danh sách ────────────
+    @bot.tree.command(name="creator-remove", description="[Admin] Xóa nhà quảng bá khỏi danh sách")
+    @app_commands.describe(user="Nhà quảng bá cần xóa")
+    @app_commands.default_permissions(administrator=True)
+    async def creator_remove(interaction: discord.Interaction, user: discord.Member):
+        from bot.creator_data import load_creators, save_creators, get_creator_by_user
+        data = load_creators()
+        creator = get_creator_by_user(data, user.id)
+
+        if not creator:
+            await interaction.response.send_message(
+                f"❌ {user.mention} không có trong danh sách nhà quảng bá.", ephemeral=True
+            )
+            return
+
+        data["creators"].remove(creator)
+        save_creators(data)
+
+        embed = discord.Embed(
+            title="🗑️ Đã xóa nhà quảng bá",
+            color=discord.Color.red(),
+        )
+        embed.set_thumbnail(url=user.display_avatar.url)
+        embed.add_field(name="👤 Creator", value=user.mention, inline=True)
+        embed.add_field(name="👥 Lượt join đã xóa", value=str(creator["join_count"]), inline=True)
+        embed.add_field(name="🔗 Link đã xóa", value=creator["invite_url"], inline=False)
+        embed.set_footer(text=f"Xóa bởi: {interaction.user.display_name}")
+        await interaction.response.send_message(embed=embed)
+
     # ── /creator-reset — Reset toàn bộ thống kê join ─────────────
     @bot.tree.command(name="creator-reset", description="[Admin] Reset số lượt join của tất cả creator về 0")
     @app_commands.default_permissions(administrator=True)
