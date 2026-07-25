@@ -96,9 +96,13 @@ async def on_invite_delete(invite: discord.Invite):
 @bot.event
 async def on_member_join(member: discord.Member):
     """Xử lý thành viên mới: theo dõi creator invite + gửi embed chào mừng."""
+    import datetime as dt_module
     guild = member.guild
 
-    # ── 1. Theo dõi invite của creator ──────────────────────────
+    # ── 1. Theo dõi invite và xác định creator ───────────────────
+    inviter_mention = "Không xác định"
+    creator_total = None  # None = không tìm được creator
+
     try:
         new_invites = await guild.invites()
         old_cache = bot.invite_cache.get(guild.id, {})
@@ -114,10 +118,17 @@ async def on_member_join(member: discord.Member):
         if used_code:
             from bot.creator_data import load_creators, save_creators, get_creator_by_code
             creator_data = load_creators()
-            creator = get_creator_by_code(creator_data, used_code)
-            if creator:
-                creator["join_count"] += 1
+            creator_entry = get_creator_by_code(creator_data, used_code)
+            if creator_entry:
+                creator_entry["join_count"] += 1
                 save_creators(creator_data)
+                creator_total = creator_entry["join_count"]
+                # Lấy mention nếu còn trong server, fallback về username
+                try:
+                    creator_member = await guild.fetch_member(int(creator_entry["user_id"]))
+                    inviter_mention = creator_member.mention
+                except Exception:
+                    inviter_mention = creator_entry.get("username", "Không xác định")
     except Exception:
         pass  # Không để lỗi tracking phá vỡ chào mừng
 
@@ -129,25 +140,34 @@ async def on_member_join(member: discord.Member):
         return
 
     channel_id = cfg.get("channel_id")
-    delete_after = cfg.get("delete_after", 0)
-    message = cfg.get("message", "{user} đã tham gia server!")
-
     if not channel_id:
         return
     channel = guild.get_channel(int(channel_id))
     if not channel:
         return
 
-    description = message.replace("{user}", member.mention)
-    embed = discord.Embed(description=description, color=0x2B2D31)
-    msg = await channel.send(embed=embed)
+    # Thời gian tham gia theo múi giờ Việt Nam (UTC+7)
+    vn_tz = dt_module.timezone(dt_module.timedelta(hours=7))
+    joined_at = member.joined_at or discord.utils.utcnow()
+    local_time = joined_at.astimezone(vn_tz)
+    time_str = local_time.strftime("%H:%M | %d/%m/%Y")
 
-    if delete_after and delete_after > 0:
-        await asyncio.sleep(delete_after * 60)
-        try:
-            await msg.delete()
-        except Exception:
-            pass
+    embed = discord.Embed(
+        title="🎉 Thành viên mới đã tham gia!",
+        color=0xF1C40F,
+    )
+    embed.set_thumbnail(url=member.display_avatar.url)
+    embed.add_field(name="👤 Thành viên", value=member.mention, inline=False)
+    embed.add_field(name="🎁 Được mời bởi", value=inviter_mention, inline=False)
+    if creator_total is not None:
+        embed.add_field(
+            name="📈 Tổng số người đã mời",
+            value=f"{creator_total} người",
+            inline=False,
+        )
+    embed.add_field(name="🕒 Thời gian", value=time_str, inline=False)
+
+    await channel.send(embed=embed)
 
 
 @bot.event

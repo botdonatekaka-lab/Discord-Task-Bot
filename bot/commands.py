@@ -442,45 +442,34 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    # ── /welcome — Cấu hình kênh, nội dung và thời gian xóa embed chào mừng ─
-    @bot.tree.command(name="welcome", description="[Admin] Cấu hình hệ thống chào mừng thành viên mới")
-    @app_commands.describe(
-        channel="Kênh gửi Embed chào mừng",
-        message="Nội dung chào mừng. Dùng {user} để mention thành viên mới",
-        delete_after="Số phút tự xóa Embed (0 = không tự xóa)",
-    )
+    # ── /welcome — Cài đặt kênh gửi thông báo chào mừng thành viên mới ─
+    @bot.tree.command(name="welcome", description="[Admin] Cài đặt kênh gửi thông báo chào mừng thành viên mới")
+    @app_commands.describe(channel="Kênh gửi thông báo chào mừng")
     @app_commands.default_permissions(administrator=True)
     async def welcome_config(
         interaction: discord.Interaction,
         channel: discord.TextChannel,
-        message: str,
-        delete_after: int,
     ):
         from bot.data import load_data, save_data
-        if delete_after < 0:
-            await interaction.response.send_message(
-                "❌ `delete_after` phải lớn hơn hoặc bằng 0.", ephemeral=True
-            )
-            return
-
         data = load_data()
-        data["welcome_config"] = {
-            "channel_id": channel.id,
-            "message": message,
-            "delete_after": delete_after,
-        }
+        data["welcome_config"] = {"channel_id": str(channel.id)}
         save_data(data)
 
-        delete_text = f"tự xóa sau **{delete_after} phút**" if delete_after > 0 else "**không tự xóa**"
-        preview = message.replace("{user}", interaction.user.mention)
-
         embed = discord.Embed(
-            title="✅ Đã cập nhật cấu hình chào mừng",
+            title="✅ Đã cài đặt kênh chào mừng",
             color=discord.Color.green(),
         )
-        embed.add_field(name="📢 Kênh", value=channel.mention, inline=True)
-        embed.add_field(name="⏱️ Tự xóa", value=delete_text, inline=True)
-        embed.add_field(name="💬 Nội dung (xem trước)", value=preview, inline=False)
+        embed.add_field(name="📢 Kênh", value=channel.mention, inline=False)
+        embed.add_field(
+            name="📋 Thông tin hiển thị",
+            value=(
+                "👤 **Thành viên** — mention người mới\n"
+                "🎁 **Được mời bởi** — Creator sở hữu link (hoặc *Không xác định*)\n"
+                "📈 **Tổng người đã mời** — thống kê của Creator\n"
+                "🕒 **Thời gian** — giờ Việt Nam (UTC+7)"
+            ),
+            inline=False,
+        )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # ── /creator — Thêm nhà quảng bá và tạo invite riêng ─────────
