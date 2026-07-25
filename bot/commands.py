@@ -483,6 +483,120 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.add_field(name="💬 Nội dung (xem trước)", value=preview, inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    # ── /creator — Thêm nhà quảng bá và tạo invite riêng ─────────
+    @bot.tree.command(name="creator", description="[Admin] Thêm nhà quảng bá và tạo invite riêng cho họ")
+    @app_commands.describe(user="Thành viên được chỉ định làm nhà quảng bá")
+    @app_commands.default_permissions(administrator=True)
+    async def creator_add(interaction: discord.Interaction, user: discord.Member):
+        from bot.creator_data import load_creators, save_creators, get_creator_by_user, add_creator
+        await interaction.response.defer(ephemeral=True)
+
+        data = load_creators()
+        existing = get_creator_by_user(data, user.id)
+        if existing:
+            embed = discord.Embed(
+                title="⚠️ Creator đã tồn tại",
+                description=f"{user.mention} đã là nhà quảng bá.",
+                color=discord.Color.orange(),
+            )
+            embed.add_field(name="🔗 Link invite", value=existing["invite_url"], inline=False)
+            embed.add_field(name="👥 Số lượt join", value=str(existing["join_count"]), inline=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            return
+
+        # Chọn kênh để tạo invite: ưu tiên system_channel, fallback sang kênh text đầu tiên
+        invite_channel = interaction.guild.system_channel
+        if not invite_channel:
+            for ch in interaction.guild.text_channels:
+                if ch.permissions_for(interaction.guild.me).create_instant_invite:
+                    invite_channel = ch
+                    break
+
+        if not invite_channel:
+            await interaction.followup.send("❌ Bot không tìm được kênh để tạo invite.", ephemeral=True)
+            return
+
+        try:
+            invite = await invite_channel.create_invite(
+                max_age=0,      # Không hết hạn
+                max_uses=0,     # Không giới hạn lượt dùng
+                unique=True,
+                reason=f"Creator invite cho {user}",
+            )
+        except discord.Forbidden:
+            await interaction.followup.send("❌ Bot không có quyền tạo invite.", ephemeral=True)
+            return
+
+        entry = add_creator(data, user.id, str(user), invite.code, invite.url)
+        save_creators(data)
+
+        embed = discord.Embed(
+            title="✅ Đã thêm nhà quảng bá",
+            color=discord.Color.green(),
+        )
+        embed.set_thumbnail(url=user.display_avatar.url)
+        embed.add_field(name="👤 Creator", value=user.mention, inline=True)
+        embed.add_field(name="🔗 Link invite", value=invite.url, inline=False)
+        embed.add_field(name="📅 Ngày tạo", value=entry["created_at"][:10], inline=True)
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
+    # ── /creator-stats — Thống kê tất cả creator ─────────────────
+    @bot.tree.command(name="creator-stats", description="Xem thống kê nhà quảng bá (sắp xếp theo lượt join)")
+    @app_commands.default_permissions(administrator=True)
+    async def creator_stats(interaction: discord.Interaction):
+        from bot.creator_data import load_creators
+        await interaction.response.defer(ephemeral=True)
+
+        data = load_creators()
+        creators = sorted(data["creators"], key=lambda c: c["join_count"], reverse=True)
+
+        if not creators:
+            await interaction.followup.send("📭 Chưa có nhà quảng bá nào.", ephemeral=True)
+            return
+
+        embed = discord.Embed(
+            title="📊 Thống kê Nhà Quảng Bá",
+            color=discord.Color.blurple(),
+        )
+
+        for i, c in enumerate(creators, start=1):
+            created = c.get("created_at", "")[:10]
+            embed.add_field(
+                name=f"{i}. {c['username']}",
+                value=(
+                    f"🔗 {c['invite_url']}\n"
+                    f"👥 **{c['join_count']}** lượt join\n"
+                    f"📅 {created}"
+                ),
+                inline=False,
+            )
+
+        embed.set_footer(text=f"Tổng: {len(creators)} creator")
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
+    # ── /creator-reset — Reset toàn bộ thống kê join ─────────────
+    @bot.tree.command(name="creator-reset", description="[Admin] Reset số lượt join của tất cả creator về 0")
+    @app_commands.default_permissions(administrator=True)
+    async def creator_reset(interaction: discord.Interaction):
+        from bot.creator_data import load_creators, save_creators
+        data = load_creators()
+
+        if not data["creators"]:
+            await interaction.response.send_message("📭 Chưa có nhà quảng bá nào để reset.", ephemeral=True)
+            return
+
+        for c in data["creators"]:
+            c["join_count"] = 0
+        save_creators(data)
+
+        embed = discord.Embed(
+            title="🔄 Đã reset thống kê",
+            description=f"Đã đặt lại số lượt join của **{len(data['creators'])} creator** về 0.\nLink invite vẫn giữ nguyên.",
+            color=discord.Color.orange(),
+        )
+        embed.set_footer(text=f"Reset bởi: {interaction.user.display_name}")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
     # ── Error handlers ────────────────────────────────────────────
     @donate_setup.error
     @donate_list.error
