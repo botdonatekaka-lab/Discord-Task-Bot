@@ -59,12 +59,16 @@ async def on_ready():
             bot.invite_cache[guild.id] = {}
     print(f"📨 Đã cache invite cho {len(bot.guilds)} guild(s)")
 
-    # Sync slash commands lên Discord (global)
-    try:
-        synced = await bot.tree.sync()
-        print(f"⚙️  Đã sync {len(synced)} slash command(s)")
-    except Exception as e:
-        print(f"❌ Lỗi sync commands: {e}")
+    # Sync slash commands vào từng guild (tức thì, không cần chờ global propagation)
+    total_synced = 0
+    for guild in bot.guilds:
+        try:
+            bot.tree.copy_global_to(guild=guild)
+            synced = await bot.tree.sync(guild=guild)
+            total_synced += len(synced)
+        except Exception as e:
+            print(f"❌ Lỗi sync guild {guild.id}: {e}")
+    print(f"⚙️  Đã sync {total_synced} slash command(s) vào {len(bot.guilds)} guild(s)")
 
     # Khởi động background tasks (phải trong on_ready vì cần event loop)
     from bot.tasks import setup_tasks
