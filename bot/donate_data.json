@@ -2377,13 +2377,24 @@
       "amount": 25000,
       "status": "pending",
       "created_at": "2026-07-25T13:02:58.900722"
+    },
+    {
+      "code": "KAIA089104",
+      "user_id": "1122110156847726632",
+      "user_name": "Nguyễn Viết Hiếu",
+      "target_id": "1122110156847726632",
+      "target_name": "Nguyễn Viết Hiếu",
+      "package_key": "co_dong_nho",
+      "package_name": "Cổ Đông Nhỏ",
+      "months": "1",
+      "amount": 25000,
+      "status": "pending",
+      "created_at": "2026-07-25T14:55:21.995215"
     }
   ],
   "panel_message_id": "1530554625063649312",
   "panel_channel_id": "1514934088870662184",
   "welcome_config": {
-    "channel_id": 1512092808826327051,
-    "message": "<a:chichdien:1529874435497132182>{user} đã bị dí điện bắt cóc vào sever !",
-    "delete_after": 3
+    "channel_id": "1523254410745086004"
   }
 }
