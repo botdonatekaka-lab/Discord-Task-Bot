@@ -239,34 +239,6 @@ async def finalize_donation(
         await admin_channel.send(embed=admin_embed, view=admin_view)
 
 
-# ── Modal nhập số tiền tùy chọn ──────────────────────────────────
-
-class CustomAmountModal(Modal, title="✍️ Nhập Số Tiền Tùy Chọn"):
-    amount_input = TextInput(
-        label="Số tiền (VNĐ)",
-        placeholder="Ví dụ: 50000",
-        min_length=1,
-        max_length=10,
-    )
-
-    def __init__(self, pkg_key: str, target: discord.Member, donor: discord.Member):
-        super().__init__()
-        self.pkg_key = pkg_key
-        self.target = target
-        self.donor = donor
-
-    async def on_submit(self, interaction: discord.Interaction):
-        # Làm sạch input và kiểm tra hợp lệ
-        raw = self.amount_input.value.replace(",", "").replace(".", "").strip()
-        if not raw.isdigit() or int(raw) <= 0:
-            await interaction.response.send_message(
-                "❌ Số tiền không hợp lệ. Vui lòng nhập số nguyên dương.", ephemeral=True
-            )
-            return
-        await finalize_donation(
-            interaction, self.pkg_key, self.target, self.donor, "custom", int(raw)
-        )
-
 
 # ── Dropdown chọn số tháng (có hiển thị giá tiền) ───────────────
 
@@ -286,19 +258,10 @@ class MonthSelect(Select):
             )
             for m, p in pkg["prices"].items()
         ]
-        options.append(discord.SelectOption(label="Số Khác (tùy chọn)", value="custom", emoji="✍️"))
         super().__init__(placeholder="📅 Chọn số tháng...", options=options)
 
     async def callback(self, interaction: discord.Interaction):
         months = self.values[0]
-
-        if months == "custom":
-            # Mở modal nhập số tiền tùy chọn
-            await interaction.response.send_modal(
-                CustomAmountModal(self.pkg_key, self.target, self.donor)
-            )
-            return
-
         pkg = PACKAGES[self.pkg_key]
         amount = pkg["prices"][months]
         await finalize_donation(interaction, self.pkg_key, self.target, self.donor, months, amount)
