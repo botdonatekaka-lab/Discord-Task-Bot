@@ -489,7 +489,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
     @app_commands.default_permissions(administrator=True)
     async def creator_add(interaction: discord.Interaction, user: discord.Member):
         from bot.creator_data import load_creators, save_creators, get_creator_by_user, add_creator
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
         data = load_creators()
         existing = get_creator_by_user(data, user.id)
@@ -501,7 +501,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             )
             embed.add_field(name="🔗 Link invite", value=existing["invite_url"], inline=False)
             embed.add_field(name="👥 Số lượt join", value=str(existing["join_count"]), inline=True)
-            await interaction.followup.send(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
             return
 
         # Chọn kênh để tạo invite: ưu tiên system_channel, fallback sang kênh text đầu tiên
@@ -513,7 +513,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
                     break
 
         if not invite_channel:
-            await interaction.followup.send("❌ Bot không tìm được kênh để tạo invite.", ephemeral=True)
+            await interaction.followup.send("❌ Bot không tìm được kênh để tạo invite.")
             return
 
         try:
@@ -524,7 +524,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
                 reason=f"Creator invite cho {user}",
             )
         except discord.Forbidden:
-            await interaction.followup.send("❌ Bot không có quyền tạo invite.", ephemeral=True)
+            await interaction.followup.send("❌ Bot không có quyền tạo invite.")
             return
 
         entry = add_creator(data, user.id, str(user), invite.code, invite.url)
@@ -538,20 +538,20 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         embed.add_field(name="👤 Creator", value=user.mention, inline=True)
         embed.add_field(name="🔗 Link invite", value=invite.url, inline=False)
         embed.add_field(name="📅 Ngày tạo", value=entry["created_at"][:10], inline=True)
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
     # ── /creator-stats — Thống kê tất cả creator ─────────────────
     @bot.tree.command(name="creator-stats", description="Xem thống kê nhà quảng bá (sắp xếp theo lượt join)")
     @app_commands.default_permissions(administrator=True)
     async def creator_stats(interaction: discord.Interaction):
         from bot.creator_data import load_creators
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
         data = load_creators()
         creators = sorted(data["creators"], key=lambda c: c["join_count"], reverse=True)
 
         if not creators:
-            await interaction.followup.send("📭 Chưa có nhà quảng bá nào.", ephemeral=True)
+            await interaction.followup.send("📭 Chưa có nhà quảng bá nào.")
             return
 
         embed = discord.Embed(
@@ -572,7 +572,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             )
 
         embed.set_footer(text=f"Tổng: {len(creators)} creator")
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
     # ── /creator-reset — Reset toàn bộ thống kê join ─────────────
     @bot.tree.command(name="creator-reset", description="[Admin] Reset số lượt join của tất cả creator về 0")
@@ -582,7 +582,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         data = load_creators()
 
         if not data["creators"]:
-            await interaction.response.send_message("📭 Chưa có nhà quảng bá nào để reset.", ephemeral=True)
+            await interaction.response.send_message("📭 Chưa có nhà quảng bá nào để reset.")
             return
 
         for c in data["creators"]:
@@ -595,7 +595,7 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
             color=discord.Color.orange(),
         )
         embed.set_footer(text=f"Reset bởi: {interaction.user.display_name}")
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed)
 
     # ── Error handlers ────────────────────────────────────────────
     @donate_setup.error
