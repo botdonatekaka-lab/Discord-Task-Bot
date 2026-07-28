@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KaiX Control Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="panel">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="avatar">🤖</div>
+      <div class="bot-info">
+        <h1>KaiX Control Panel</h1>
+        <div class="status-row">
+          <span class="dot" id="dot"></span>
+          <span class="status-label" id="statusLabel">Đang kết nối...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-start" id="startBtn" onclick="startBot()" disabled>
+        <span class="btn-icon">▶</span> Bật Bot
+      </button>
+      <button class="btn btn-stop" id="stopBtn" onclick="stopBot()" disabled>
+        <span class="btn-icon">⏹</span> Tắt Bot
+      </button>
+    </div>
+
+    <!-- Console -->
+    <div class="console-wrap">
+      <div class="console-bar">
+        <span class="console-title">📋 Console Log</span>
+        <button class="clear-btn" onclick="clearLog()">Xóa</button>
+      </div>
+      <div class="console" id="console">
+        <div class="log-placeholder">Nhật ký sẽ hiển thị ở đây...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
