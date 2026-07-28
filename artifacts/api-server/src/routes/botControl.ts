@@ -5,6 +5,12 @@
 import { type Express } from "express";
 import { Server as SocketIO } from "socket.io";
 import { spawn, type ChildProcess } from "child_process";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// dist/index.mjs → artifacts/api-server/dist/ → go up 3 levels → workspace root
+const __currentDir = path.dirname(fileURLToPath(import.meta.url));
+const WORKSPACE_ROOT = path.resolve(__currentDir, "../../..");
 
 let botProcess: ChildProcess | null = null;
 
@@ -33,10 +39,8 @@ export function setupBotControl(app: Express, io: SocketIO): void {
       return;
     }
 
-    const cwd = process.cwd();
-
     botProcess = spawn("python", ["run.py"], {
-      cwd,
+      cwd: WORKSPACE_ROOT,
       env: { ...process.env },
     });
 
