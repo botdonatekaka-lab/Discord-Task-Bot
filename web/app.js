@@ -50,7 +50,6 @@ function setButtons(startEnabled, stopEnabled) {
 }
 
 function appendLog(ts, text, isError = false) {
-  // Remove placeholder on first real log
   const placeholder = consoleEl.querySelector('.log-placeholder');
   if (placeholder) placeholder.remove();
 
@@ -65,7 +64,6 @@ function appendLog(ts, text, isError = false) {
   line.appendChild(document.createTextNode(text));
   consoleEl.appendChild(line);
 
-  // Auto-scroll to bottom
   consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
@@ -73,12 +71,12 @@ function clearLog() {
   consoleEl.innerHTML = '<div class="log-placeholder">Nhật ký sẽ hiển thị ở đây...</div>';
 }
 
-// ── Button actions ────────────────────────────────────────────────
+// ── Button actions (dùng /api/ prefix) ───────────────────────────
 
 async function startBot() {
   startBtn.disabled = true;
   try {
-    const res  = await fetch('/start', { method: 'POST' });
+    const res  = await fetch('/api/start', { method: 'POST' });
     const data = await res.json();
     if (!data.success) {
       const ts = new Date().toLocaleTimeString('vi-VN', { hour12: false });
@@ -95,7 +93,7 @@ async function startBot() {
 async function stopBot() {
   stopBtn.disabled = true;
   try {
-    const res  = await fetch('/stop', { method: 'POST' });
+    const res  = await fetch('/api/stop', { method: 'POST' });
     const data = await res.json();
     if (!data.success) {
       const ts = new Date().toLocaleTimeString('vi-VN', { hour12: false });
