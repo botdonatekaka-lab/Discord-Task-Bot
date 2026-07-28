@@ -30,6 +30,9 @@ async function buildAll() {
     external: [
       "*.node",
       "zod",
+      "socket.io",
+      "socket.io-adapter",
+      "engine.io",
       "sharp",
       "better-sqlite3",
       "sqlite3",
