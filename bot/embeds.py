@@ -11,8 +11,7 @@ from bot.data import fmt_money, fmt_months, gen_qr_url
 def build_panel_embed() -> discord.Embed:
     """Embed hiển thị panel donate công khai."""
     embed = discord.Embed(
-        title="ỦNG HỘ CHO SEVER",
-        description="Hãy chọn nút bên dưới nhé!",
+        description="### ỦNG HỘ CHO SEVER <a:donate:1532821459557417173>\nHãy chọn nút bên dưới nhé!",
         color=discord.Color.red(),
     )
     return embed
