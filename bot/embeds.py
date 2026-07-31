@@ -65,7 +65,7 @@ def build_admin_embed(
     code: str,
 ) -> discord.Embed:
     """Embed gửi vào kênh admin khi có đơn donate mới."""
-    embed = discord.Embed(title="📥 ĐƠN DONATE MỚI", color=discord.Color(0x2B2D31))
+    embed = discord.Embed(title="📥 ĐƠN DONATE MỚI", color=discord.Color.red())
     embed.set_author(
         name=f"{donor.display_name} ({donor})",
         icon_url=donor.display_avatar.url,
@@ -102,7 +102,7 @@ def build_dm_success_embed(
             "Cảm ơn bạn đã ủng hộ server **Quần Đảo Kaia**! 💖\n\n"
             "Sự ủng hộ của bạn giúp server ngày càng phát triển hơn. 🚀"
         )
-    embed = discord.Embed(title="💎 DONATE THÀNH CÔNG!", description=desc, color=discord.Color(0x2B2D31))
+    embed = discord.Embed(title="💎 DONATE THÀNH CÔNG!", description=desc, color=discord.Color.red())
     embed.add_field(name="📦 Gói", value=f"{pkg['emoji']} {pkg['name']}", inline=True)
     embed.add_field(name="💰 Số tiền", value=fmt_money(amount), inline=True)
     embed.add_field(name="📝 Mã", value=f"`{code}`", inline=True)
@@ -176,7 +176,7 @@ def build_reject_dm_embed(code: str) -> discord.Embed:
 def build_donate_list_embed(donations: list) -> discord.Embed:
     """Embed hiển thị 10 đơn donate gần nhất cho admin."""
     status_emoji = {"pending": "⏳", "approved": "✅", "rejected": "❌", "expired": "🕐"}
-    embed = discord.Embed(title="📋 DANH SÁCH DONATE GẦN ĐÂY", color=discord.Color(0x2B2D31))
+    embed = discord.Embed(title="📋 DANH SÁCH DONATE GẦN ĐÂY", color=discord.Color.red())
 
     for d in reversed(donations[-10:]):
         emoji = status_emoji.get(d["status"], "❓")
