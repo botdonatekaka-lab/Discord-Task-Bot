@@ -2539,9 +2539,57 @@
       "approved_at": "2026-07-31T19:04:40.647357",
       "approved_by": "1122110156847726632",
       "expires_at": "2026-08-30T19:04:40.647344"
+    },
+    {
+      "code": "KAIA161723",
+      "user_id": "1122110156847726632",
+      "user_name": "Nguyễn Viết Hiếu",
+      "target_id": "1122110156847726632",
+      "target_name": "Nguyễn Viết Hiếu",
+      "package_key": "dang_cap_khac",
+      "package_name": "Đẳng Cấp Khác",
+      "months": "1",
+      "amount": 200000,
+      "status": "approved",
+      "created_at": "2026-07-31T19:05:28.788311",
+      "approved_at": "2026-07-31T19:05:32.563341",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-30T19:05:32.563326"
+    },
+    {
+      "code": "KAIA153417",
+      "user_id": "1524665765385601044",
+      "user_name": "Thị lan",
+      "target_id": "1524665765385601044",
+      "target_name": "Thị lan",
+      "package_key": "co_dong_nho",
+      "package_name": "Cổ Đông Nhỏ",
+      "months": "1",
+      "amount": 25000,
+      "status": "approved",
+      "created_at": "2026-07-31T19:07:15.345138",
+      "approved_at": "2026-07-31T19:07:55.675361",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-30T19:07:55.675347"
+    },
+    {
+      "code": "KAIA273142",
+      "user_id": "1122110156847726632",
+      "user_name": "Nguyễn Viết Hiếu",
+      "target_id": "1122110156847726632",
+      "target_name": "Nguyễn Viết Hiếu",
+      "package_key": "cu_dan_dong_gop",
+      "package_name": "Cư Dân Đóng Góp",
+      "months": "1",
+      "amount": 10000,
+      "status": "approved",
+      "created_at": "2026-07-31T19:08:27.785762",
+      "approved_at": "2026-07-31T19:08:32.035366",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-30T19:08:32.035353"
     }
   ],
-  "panel_message_id": "1532826375600214208",
+  "panel_message_id": "1532827336414597182",
   "panel_channel_id": "1514934088870662184",
   "welcome_config": {
     "channel_id": "1523254410745086004"
