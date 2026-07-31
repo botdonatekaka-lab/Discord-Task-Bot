@@ -2502,11 +2502,30 @@
       "package_name": "Cư Dân Đóng Góp",
       "months": "1",
       "amount": 10000,
-      "status": "pending",
-      "created_at": "2026-07-31T19:03:01.060490"
+      "status": "approved",
+      "created_at": "2026-07-31T19:03:01.060490",
+      "approved_at": "2026-07-31T19:03:13.651418",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-30T19:03:13.651404"
+    },
+    {
+      "code": "KAIA081489",
+      "user_id": "1122110156847726632",
+      "user_name": "Nguyễn Viết Hiếu",
+      "target_id": "1122110156847726632",
+      "target_name": "Nguyễn Viết Hiếu",
+      "package_key": "dang_cap_khac",
+      "package_name": "Đẳng Cấp Khác",
+      "months": "1",
+      "amount": 200000,
+      "status": "approved",
+      "created_at": "2026-07-31T19:03:25.226513",
+      "approved_at": "2026-07-31T19:03:29.831241",
+      "approved_by": "1122110156847726632",
+      "expires_at": "2026-08-30T19:03:29.831229"
     }
   ],
-  "panel_message_id": "1532824064232525916",
+  "panel_message_id": "1532826067298025484",
   "panel_channel_id": "1514934088870662184",
   "welcome_config": {
     "channel_id": "1523254410745086004"
