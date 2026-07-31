@@ -19,7 +19,7 @@ PRIVILEGE_CHANNEL_ID = 1513291802193559652 # Kênh giới thiệu đặc quyền
 PACKAGES = {
     "dang_cap_khac": {
         "name": "Đẳng Cấp Khác",
-        "emoji": discord.PartialEmoji(name="emoji_70", id=1522034734081904750),
+        "emoji": discord.PartialEmoji(name="dangcapkhac", id=1532806537083490364),
         "role_id": 1512910004548669500,
         "prices": {
             "1": 200000,
@@ -29,7 +29,7 @@ PACKAGES = {
     },
     "co_dong_lon": {
         "name": "Cổ Đông Lớn",
-        "emoji": discord.PartialEmoji(name="emoji_67", id=1522034571804278937),
+        "emoji": discord.PartialEmoji(name="codonglon", id=1532803978595664055),
         "role_id": 1512099086990577675,
         "prices": {
             "1": 100000,
@@ -39,7 +39,7 @@ PACKAGES = {
     },
     "co_dong_nho": {
         "name": "Cổ Đông Nhỏ",
-        "emoji": discord.PartialEmoji(name="emoji_67", id=1522034525906145411),
+        "emoji": discord.PartialEmoji(name="codongnho", id=1532803887675867331),
         "role_id": 1514290379787079881,
         "prices": {
             "1": 25000,
@@ -49,7 +49,7 @@ PACKAGES = {
     },
     "cu_dan_dong_gop": {
         "name": "Cư Dân Đóng Góp",
-        "emoji": discord.PartialEmoji(name="emoji_69", id=1522034654650040523),
+        "emoji": discord.PartialEmoji(name="cudandonggop", id=1532803808285950133),
         "role_id": 1512799562149003275,
         "prices": {
             "1": 10000,
