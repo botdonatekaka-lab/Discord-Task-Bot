@@ -1,43 +1,29 @@
-# Discord Donation Bot
+# KaiX Discord Bot
 
-A Python Discord bot (discord.py) that manages community donations — users submit donate requests via interactive panels, admins approve/reject them, and the bot assigns roles automatically.
-
-## Stack
-
-- **Language:** Python 3.11
-- **Library:** discord.py 2.7.1
-- **Storage:** JSON files (`bot/donate_data.json`, `bot/event_data.json`)
-
-## How to run
-
-The workflow **Discord Bot** runs `python run.py`.
-
-### Required secret
-
-| Key | Description |
-|-----|-------------|
-| `DISCORD_TOKEN` | Bot token from the Discord Developer Portal |
+A Vietnamese Discord bot with a web control panel (dashboard).
 
 ## Project structure
 
-```
-bot/
-  main.py       — Entry point: initializes bot, registers events & commands
-  commands.py   — Slash commands
-  views.py      — Discord UI views (buttons, modals)
-  embeds.py     — Embed builders
-  data.py       — JSON data helpers
-  tasks.py      — Background tasks
-  event.py      — Event thread logic
-  config.py     — Channel IDs, role IDs, donate packages, bank info
-run.py          — Start script (runs bot/main.py)
-```
+| Path | Purpose |
+|------|---------|
+| `bot/` | Discord bot source (Python, discord.py) |
+| `run.py` | Bot entry point — spawned by the dashboard |
+| `server.js` | Web dashboard (Node.js / Express + Socket.IO) |
+| `web/` | Dashboard frontend (plain HTML/CSS/JS) |
 
-## Configuration
+## How to run
 
-Edit `bot/config.py` to update:
-- Bank account details
-- Discord channel IDs (admin channel, thanks channel, privilege channel)
-- Donate packages (names, prices, role IDs, emojis)
+One workflow manages the entire project:
+
+### Dashboard Web (`node server.js`)
+Opens a control panel at the app's preview URL. Use the **Bật Bot** (Start) / **Tắt Bot** (Stop) buttons to control the bot. The dashboard spawns `python run.py` as a child process and streams its logs in real time.
+
+> **Important:** Do not run `python run.py` separately — the dashboard is the sole controller of the bot process. Running both would start two bot instances on the same token.
+
+## Required secrets
+
+| Secret | Description |
+|--------|-------------|
+| `DISCORD_TOKEN` | Bot token from the Discord Developer Portal (Bot → Token) |
 
 ## User preferences
