@@ -13,7 +13,7 @@ def build_panel_embed() -> discord.Embed:
     embed = discord.Embed(
         title="ỦNG HỘ CHO SEVER",
         description="Hãy chọn nút bên dưới nhé!",
-        color=discord.Color(0x2B2D31),
+        color=discord.Color.red(),
     )
     return embed
 
@@ -23,7 +23,7 @@ def build_package_embed(pkg: dict) -> discord.Embed:
     embed = discord.Embed(
         title=f"Đã chọn: {pkg['emoji']} {pkg['name']}",
         description="Chọn số tháng bên dưới.",
-        color=discord.Color(0x2B2D31),
+        color=discord.Color.red(),
     )
     return embed
 
@@ -49,7 +49,7 @@ def build_qr_embed(
             f"📝 **Nội dung CK:** `{code}`\n\n"
             "📸 **Lưu ý:** Khi chuyển khoản vui lòng chụp bill lại."
         ),
-        color=discord.Color(0x2B2D31),
+        color=discord.Color.red(),
     )
     embed.set_image(url=qr_url)
     embed.set_footer(text=f"Gói: {pkg['name']} • {fmt_months(months)} • Mã: {code}")
@@ -122,7 +122,7 @@ def build_dm_expired_embed(pkg: dict, code: str) -> discord.Embed:
             "Cảm ơn bạn đã đồng hành cùng server **Quần Đảo Kaia**! 💖\n"
             "Bạn có thể donate lại để tiếp tục nhận role nhé."
         ),
-        color=discord.Color(0x2B2D31),
+        color=discord.Color.red(),
     )
     embed.add_field(name="📦 Gói đã hết hạn", value=f"{pkg['emoji']} {pkg['name']}", inline=True)
     embed.add_field(name="📝 Mã", value=f"`{code}`", inline=True)
@@ -153,7 +153,7 @@ def build_thanks_embed(
             "và mang đến nhiều trải nghiệm tốt hơn cho mọi người. 🚀\n\n"
             f"🎖️ Role {role_mention} đã được trao như một lời cảm ơn nhỏ từ server!"
         ),
-        color=discord.Color(0x2B2D31),
+        color=discord.Color.red(),
     )
     if target:
         embed.set_thumbnail(url="attachment://avatar.png")
@@ -168,7 +168,7 @@ def build_reject_dm_embed(code: str) -> discord.Embed:
             f"Đơn donate của bạn với mã `{code}` đã bị từ chối.\n"
             "Vui lòng liên hệ admin nếu bạn đã thực hiện chuyển khoản."
         ),
-        color=discord.Color(0x2B2D31),
+        color=discord.Color.red(),
     )
     return embed
 
