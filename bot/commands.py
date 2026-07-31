@@ -24,7 +24,11 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
     @bot.tree.command(name="donate", description="Donate để ủng hộ server")
     async def slash_donate(interaction: discord.Interaction):
         view = SimplePackageView(default_target=interaction.user)
-        await interaction.response.send_message(view=view, ephemeral=True)
+        await interaction.response.send_message(
+            content="Chọn gói donate và số tháng bạn muốn:",
+            view=view,
+            ephemeral=True,
+        )
 
     # ── /donate_setup — Gửi panel donate vào kênh hiện tại ───────
     @bot.tree.command(name="donate_setup", description="[Owner] Gửi panel donate công khai")

@@ -373,6 +373,9 @@ class PublicDonateView(View):
 
     async def _donate_callback(self, interaction: discord.Interaction):
         """Mở menu chọn gói donate (ephemeral)."""
-        await interaction.response.defer(ephemeral=True)
         view = SimplePackageView(default_target=interaction.user)
-        await interaction.followup.send(view=view, ephemeral=True)
+        await interaction.response.send_message(
+            content="Chọn gói donate và số tháng bạn muốn:",
+            view=view,
+            ephemeral=True,
+        )
