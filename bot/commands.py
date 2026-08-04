@@ -476,6 +476,53 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    # ── /role-all — Thêm role cho tất cả thành viên ──────────────
+    @bot.tree.command(name="role-all", description="[Admin] Thêm một role cho tất cả thành viên trong server")
+    @app_commands.describe(role="Role muốn thêm cho tất cả thành viên")
+    @app_commands.default_permissions(administrator=True)
+    async def role_all(interaction: discord.Interaction, role: discord.Role):
+        await interaction.response.defer(ephemeral=True)
+
+        guild = interaction.guild
+
+        # Kiểm tra bot có đủ quyền không
+        if role >= guild.me.top_role:
+            await interaction.followup.send(
+                f"❌ Role {role.mention} cao hơn hoặc bằng role cao nhất của bot. Bot không thể gán role này.",
+                ephemeral=True,
+            )
+            return
+
+        members = [m for m in guild.members if not m.bot and role not in m.roles]
+
+        if not members:
+            await interaction.followup.send(
+                f"ℹ️ Tất cả thành viên đã có role {role.mention} rồi.",
+                ephemeral=True,
+            )
+            return
+
+        success = 0
+        failed = 0
+        for member in members:
+            try:
+                await member.add_roles(role, reason=f"role-all bởi {interaction.user}")
+                success += 1
+            except Exception:
+                failed += 1
+
+        embed = discord.Embed(
+            title="✅ Hoàn tất thêm role hàng loạt",
+            color=discord.Color.green(),
+        )
+        embed.add_field(name="🎭 Role", value=role.mention, inline=False)
+        embed.add_field(name="✅ Thành công", value=str(success), inline=True)
+        if failed:
+            embed.add_field(name="❌ Thất bại", value=str(failed), inline=True)
+        embed.add_field(name="👥 Tổng xử lý", value=str(success + failed), inline=True)
+        embed.set_footer(text=f"Thực hiện bởi: {interaction.user.display_name}")
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
     # ── Error handlers ────────────────────────────────────────────
     @donate_setup.error
     @donate_list.error
