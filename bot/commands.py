@@ -535,7 +535,6 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
 
     # ── /creator-stats — Thống kê tất cả creator ─────────────────
     @bot.tree.command(name="creator-stats", description="Xem thống kê nhà quảng bá (sắp xếp theo lượt join)")
-    @app_commands.default_permissions(administrator=True)
     async def creator_stats(interaction: discord.Interaction):
         from bot.creator_data import load_creators
         await interaction.response.defer()
