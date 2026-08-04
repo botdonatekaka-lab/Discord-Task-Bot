@@ -537,13 +537,13 @@ def register_commands(bot: discord.ext.commands.Bot) -> None:
     @bot.tree.command(name="creator-stats", description="Xem thống kê nhà quảng bá (sắp xếp theo lượt join)")
     async def creator_stats(interaction: discord.Interaction):
         from bot.creator_data import load_creators
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=False)
 
         data = load_creators()
         creators = sorted(data["creators"], key=lambda c: c["join_count"], reverse=True)
 
         if not creators:
-            await interaction.followup.send("📭 Chưa có nhà quảng bá nào.")
+            await interaction.followup.send("📭 Chưa có nhà quảng bá nào.", ephemeral=False)
             return
 
         embed = discord.Embed(
