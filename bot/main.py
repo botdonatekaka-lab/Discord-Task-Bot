@@ -46,6 +46,10 @@ async def on_ready():
 
     print(f"🔄 Đã khôi phục {pending_count} view đang pending")
 
+    # Xóa toàn bộ lệnh global cũ (tránh cache lệnh đã xóa trên client Discord)
+    await bot.tree.sync()
+    print("🧹 Đã xóa lệnh global cũ")
+
     # Sync slash commands vào từng guild (tức thì, không cần chờ global propagation)
     total_synced = 0
     for guild in bot.guilds:
