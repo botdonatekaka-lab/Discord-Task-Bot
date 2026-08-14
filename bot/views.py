@@ -140,13 +140,29 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     if thanks_channel:
         role_mention = role.mention if role else f"**{pkg['name']}**"
         fallback_name = donation.get("target_name") or donation.get("user_name") or "người donate"
-        thanks_embed = build_thanks_embed(target, role_mention, fallback_name)
-        if target and isinstance(target, discord.Member):
-            avatar_bytes = await target.display_avatar.read()
-            avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
-            await thanks_channel.send(content=target.mention, file=avatar_file, embed=thanks_embed)
-        else:
-            await thanks_channel.send(embed=thanks_embed)
+        avatar_file = None
+        avatar_attached = False
+        if target:
+            try:
+                avatar_bytes = await target.display_avatar.read()
+                avatar_file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.png")
+                avatar_attached = True
+            except Exception:
+                # Vẫn gửi embed nếu CDN avatar tạm thời không truy cập được.
+                pass
+
+        thanks_embed = build_thanks_embed(
+            target,
+            role_mention,
+            fallback_name,
+            avatar_attached=avatar_attached,
+        )
+        send_kwargs = {"embed": thanks_embed}
+        if target:
+            send_kwargs["content"] = target.mention
+        if avatar_file:
+            send_kwargs["file"] = avatar_file
+        await thanks_channel.send(**send_kwargs)
 
     # Làm mới panel
     from bot.views import refresh_panel

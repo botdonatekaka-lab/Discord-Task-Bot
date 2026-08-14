@@ -133,6 +133,7 @@ def build_thanks_embed(
     target: discord.Member | discord.User | None,
     role_mention: str,
     fallback_name: str = "người donate",
+    avatar_attached: bool = False,
 ) -> discord.Embed:
     """Embed gửi vào kênh cảm ơn sau khi đơn được duyệt."""
     # Ưu tiên: member.display_name → user.global_name → user.name → fallback_name
@@ -154,7 +155,7 @@ def build_thanks_embed(
         ),
         color=discord.Color.red(),
     )
-    if target:
+    if target and avatar_attached:
         embed.set_thumbnail(url="attachment://avatar.png")
     return embed
 
