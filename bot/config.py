@@ -6,7 +6,7 @@ import discord
 
 # ── Thông tin ngân hàng ──────────────────────────────────────────
 BANK_NAME = "MBBank"
-BANK_ACCOUNT = "78911112003"
+BANK_ACCOUNT = "66862222222"
 BANK_HOLDER = "NGUYEN VIET HIEU"
 
 # ── Channel IDs ──────────────────────────────────────────────────
