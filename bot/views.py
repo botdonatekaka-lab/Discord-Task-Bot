@@ -138,7 +138,7 @@ async def do_approve(interaction: discord.Interaction, code: str) -> None:
     # Gửi lời cảm ơn vào kênh thông báo
     thanks_channel = guild.get_channel(THANKS_CHANNEL_ID)
     if thanks_channel:
-        role_mention = role.mention if role else f"**{pkg['name']}**"
+        role_mention = f"**{pkg['name']}** {pkg['emoji']}"
         fallback_name = donation.get("target_name") or donation.get("user_name") or "người donate"
         avatar_file = None
         avatar_attached = False
