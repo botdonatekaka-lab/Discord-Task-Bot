@@ -4,7 +4,7 @@
 
 from datetime import datetime
 import discord
-from bot.config import BANK_ACCOUNT, BANK_HOLDER, PACKAGES
+from bot.config import BANK_ACCOUNT, BANK_HOLDER
 from bot.data import fmt_money, fmt_months, gen_qr_url
 
 

@@ -8,9 +8,6 @@ from datetime import datetime
 
 CREATOR_FILE = "bot/creator_data.json"
 
-DEFAULT_DATA: dict = {"creators": []}
-
-
 def load_creators() -> dict:
     """Đọc dữ liệu creator từ file JSON."""
     if not os.path.exists(CREATOR_FILE):

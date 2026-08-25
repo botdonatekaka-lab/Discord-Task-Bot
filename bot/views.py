@@ -5,10 +5,10 @@
 from datetime import datetime
 import io
 import discord
-from discord.ui import Button, Select, Modal, TextInput, View
+from discord.ui import Button, Select, View
 
-from bot.config import PACKAGES, ADMIN_CHANNEL_ID, THANKS_CHANNEL_ID, PRIVILEGE_CHANNEL_ID
-from bot.data import gen_code, fmt_money, fmt_months, load_data, save_data
+from bot.config import PACKAGES, ADMIN_CHANNEL_ID, THANKS_CHANNEL_ID
+from bot.data import gen_code, fmt_money, load_data, save_data
 from bot.embeds import (
     build_panel_embed,
     build_package_embed,

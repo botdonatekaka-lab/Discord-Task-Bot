@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 
 from bot.config import PACKAGES
-from bot.data import gen_code, fmt_money, fmt_months, load_data, save_data
+from bot.data import gen_code, fmt_money, load_data, save_data
 from bot.embeds import build_donate_list_embed, build_dm_success_embed
 from bot.views import SimplePackageView, PublicDonateView
 

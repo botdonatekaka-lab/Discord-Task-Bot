@@ -12,9 +12,5 @@
   "devDependencies": {
     "prettier": "^3.8.4",
     "typescript": "~5.9.3"
-  },
-  "dependencies": {
-    "express": "^5.2.1",
-    "socket.io": "^4.8.3"
   }
 }

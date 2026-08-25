@@ -2,7 +2,6 @@
 # main.py — Entry point: khởi tạo bot, đăng ký events và commands
 # ================================================================
 
-import asyncio
 import os
 import discord
 from discord.ext import commands

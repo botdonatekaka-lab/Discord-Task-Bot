@@ -12,7 +12,6 @@ BANK_HOLDER = "NGUYEN VIET HIEU"
 # ── Channel IDs ──────────────────────────────────────────────────
 ADMIN_CHANNEL_ID   = 1515221397452882000   # Kênh admin nhận đơn donate
 THANKS_CHANNEL_ID  = 1514934088870662184   # Kênh gửi lời cảm ơn sau duyệt
-PRIVILEGE_CHANNEL_ID = 1513291802193559652 # Kênh giới thiệu đặc quyền
 
 # ── Gói donate ───────────────────────────────────────────────────
 # Mỗi gói có: tên hiển thị, emoji (custom server emoji), role ID, bảng giá
